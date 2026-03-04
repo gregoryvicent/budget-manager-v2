@@ -100,7 +100,7 @@ export default function EditableExpensesList({
           {items.map((item) => (
             <div
               key={item.id}
-              className="flex justify-between items-center py-2 px-3 rounded-lg transition-all duration-200 hover:bg-charcoal/5"
+              className="flex justify-between items-center py-2 px-3 rounded-lg transition-all duration-200 hover:bg-charcoal/5 dark:hover:bg-cream/5"
             >
               {editingId === item.id ? (
                 <div className="flex gap-2 w-full">
@@ -108,7 +108,7 @@ export default function EditableExpensesList({
                     type="text"
                     value={editName}
                     onChange={(e) => setEditName(e.target.value)}
-                    className="flex-1 px-2 py-1 border border-charcoal/20 rounded text-sm text-charcoal bg-cream"
+                    className="flex-1 px-2 py-1 border border-charcoal/20 dark:border-cream/20 rounded text-sm text-charcoal dark:text-cream bg-cream dark:bg-charcoal/60"
                     placeholder="Nombre"
                   />
                   <input
@@ -116,7 +116,7 @@ export default function EditableExpensesList({
                     step="0.01"
                     value={editAmount}
                     onChange={(e) => setEditAmount(e.target.value)}
-                    className="w-24 px-2 py-1 border border-charcoal/20 rounded text-sm text-charcoal bg-cream"
+                    className="w-24 px-2 py-1 border border-charcoal/20 dark:border-cream/20 rounded text-sm text-charcoal dark:text-cream bg-cream dark:bg-charcoal/60"
                     placeholder="Monto"
                   />
                   <button
@@ -127,7 +127,7 @@ export default function EditableExpensesList({
                   </button>
                   <button
                     onClick={handleCancel}
-                    className="px-2 py-1 bg-charcoal/20 text-charcoal rounded text-xs hover:bg-charcoal/30"
+                    className="px-2 py-1 bg-charcoal/20 dark:bg-cream/20 text-charcoal dark:text-cream rounded text-xs hover:bg-charcoal/30 dark:hover:bg-cream/30"
                   >
                     ✕
                   </button>
@@ -141,13 +141,13 @@ export default function EditableExpensesList({
                   <div className="flex gap-1">
                     <button
                       onClick={() => handleEdit(item)}
-                      className="px-2 py-1 text-xs text-charcoal/60 hover:text-charcoal"
+                      className="px-2 py-1 text-xs text-charcoal/60 dark:text-cream/60 hover:text-charcoal dark:hover:text-cream"
                     >
                       ✎
                     </button>
                     <button
                       onClick={() => handleDelete(item.id)}
-                      className="px-2 py-1 text-xs text-charcoal/60 hover:text-red-600"
+                      className="px-2 py-1 text-xs text-charcoal/60 dark:text-cream/60 hover:text-red-600"
                     >
                       🗑
                     </button>
@@ -158,13 +158,13 @@ export default function EditableExpensesList({
           ))}
           <button
             onClick={handleAdd}
-            className="w-full py-2 px-3 border-2 border-dashed border-charcoal/20 rounded-lg text-charcoal/60 hover:border-sage hover:text-sage transition-all"
+            className="w-full py-2 px-3 border-2 border-dashed border-charcoal/20 dark:border-cream/20 rounded-lg text-charcoal/60 dark:text-cream/60 hover:border-sage hover:text-sage transition-all"
           >
             + Añadir Gasto
           </button>
         </div>
 
-        <div className="pt-4 mt-4 border-t border-charcoal/20">
+        <div className="pt-4 mt-4 border-t border-charcoal/20 dark:border-cream/20">
           <div className="flex justify-between items-center">
             <Heading level={3}>Total</Heading>
             <Value size="md">{formatCurrency(total)}</Value>

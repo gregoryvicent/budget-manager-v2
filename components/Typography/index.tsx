@@ -22,7 +22,7 @@ interface HeadingProps {
  * <Heading level={2}>Section Title</Heading>
  */
 export function Heading({ children, level = 2, className = "" }: HeadingProps) {
-  const baseStyles = "text-charcoal font-semibold";
+  const baseStyles = "text-charcoal dark:text-cream font-semibold";
   
   const levelStyles = {
     1: "text-3xl font-bold",
@@ -72,7 +72,7 @@ export function Text({ children, size = "base", className = "" }: TextProps) {
   };
 
   return (
-    <p className={`text-charcoal ${sizeStyles[size]} ${className}`}>
+    <p className={`text-charcoal dark:text-cream ${sizeStyles[size]} ${className}`}>
       {children}
     </p>
   );
@@ -98,7 +98,7 @@ interface LabelProps {
  */
 export function Label({ children, className = "" }: LabelProps) {
   return (
-    <span className={`text-sm text-charcoal font-normal ${className}`}>
+    <span className={`text-sm text-charcoal dark:text-cream font-normal ${className}`}>
       {children}
     </span>
   );
@@ -134,7 +134,7 @@ export function Value({ children, size = "md", className = "" }: ValueProps) {
   };
 
   return (
-    <span className={`font-mono text-charcoal ${sizeStyles[size]} ${className}`}>
+    <span className={`font-mono text-charcoal dark:text-cream ${sizeStyles[size]} ${className}`}>
       {children}
     </span>
   );
