@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import Container from "@/components/Container";
+import Header from "@/components/Header";
 
 /**
  * Props for the DashboardLayout component.
@@ -29,7 +30,8 @@ export default function DashboardLayout({
   className = "",
 }: DashboardLayoutProps) {
   return (
-    <div className={`min-h-screen bg-sage-light ${className}`}>
+    <div className={`min-h-screen bg-sage-light dark:bg-charcoal ${className}`}>
+      <Header />
       <Container className="py-4 space-y-4">
         {children}
       </Container>

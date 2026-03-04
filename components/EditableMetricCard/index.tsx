@@ -84,7 +84,7 @@ export default function EditableMetricCard({
   return (
     <Card variant="default" className={`h-40 flex items-center ${className}`}>
       <div className="space-y-2 w-full">
-        <Label className="text-charcoal/70 text-xs uppercase">{label}</Label>
+        <Label className="text-charcoal/70 dark:text-cream/70 text-xs uppercase">{label}</Label>
         {isEditing ? (
           <input
             type="number"
@@ -95,12 +95,12 @@ export default function EditableMetricCard({
             onBlur={handleBlur}
             onKeyDown={handleKeyDown}
             autoFocus
-            className="w-full text-3xl font-bold text-charcoal bg-transparent border-b-2 border-sage focus:outline-none focus:border-sage-dark"
+            className="w-full text-3xl font-bold text-charcoal dark:text-cream bg-transparent border-b-2 border-sage focus:outline-none focus:border-sage-dark"
           />
         ) : (
           <div
             onClick={handleClick}
-            className="cursor-pointer hover:bg-charcoal/5 rounded px-2 py-1 transition-colors"
+            className="cursor-pointer hover:bg-charcoal/5 dark:hover:bg-cream/5 rounded px-2 py-1 transition-colors"
           >
             <Value size="lg">{formatDisplay(value)}</Value>
           </div>

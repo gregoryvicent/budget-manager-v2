@@ -31,10 +31,10 @@ export default function Card({
 }: CardProps) {
   // Define background colors for each variant - all cards use cream color
   const variantStyles = {
-    default: "bg-cream",
-    income: "bg-cream",
-    expense: "bg-cream border border-sage/20",
-    savings: "bg-cream",
+    default: "bg-cream dark:bg-charcoal border border-sage/40 dark:border-sage/40",
+    income: "bg-cream dark:bg-charcoal border border-sage/40 dark:border-sage/40",
+    expense: "bg-cream dark:bg-charcoal border border-sage/40 dark:border-sage/40",
+    savings: "bg-cream dark:bg-charcoal border border-sage/40 dark:border-sage/40",
   };
 
   return (

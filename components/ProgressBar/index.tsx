@@ -48,7 +48,7 @@ export default function ProgressBar({
   return (
     <div className="w-full">
       <div
-        className={`w-full bg-sage-dark/10 rounded-full overflow-hidden ${heightStyles[height]}`}
+        className={`w-full bg-sage-dark/10 dark:bg-cream/10 rounded-full overflow-hidden ${heightStyles[height]}`}
         role="progressbar"
         aria-valuenow={clampedValue}
         aria-valuemin={0}
