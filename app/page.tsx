@@ -1,206 +1,240 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import DashboardLayout from "@/components/DashboardLayout";
-import MetricsGrid from "@/components/MetricsGrid";
-import IncomeSection from "@/components/IncomeSection";
-import SavingsSection from "@/components/SavingsSection";
-import EditableExpensesList from "@/components/EditableExpensesList";
-import type { IncomeItem } from "@/components/IncomeSection";
-import type { ExpenseItem } from "@/components/ExpensesSection";
-import type { SavingsMetric } from "@/components/SavingsSection";
+import { useState } from "react";
+import { TrendingUp, TrendingDown, DollarSign, Target, Shield, BarChart2, Wallet } from "lucide-react";
 
-/**
- * Home page component displaying the Budget Manager dashboard.
- * Assembles all section components with editable data.
- * Manages state for income, expenses, and savings with automatic calculations.
- *
- * @returns {JSX.Element} The rendered dashboard page
- */
-export default function Home() {
-    // State for income sources
-    const [incomeItems, setIncomeItems] = useState<IncomeItem[]>([
-        { id: "1", name: "Salario (ENCU)", amount: 850.0 },
-        { id: "2", name: "Aguinaldo", amount: 100.0 },
-        { id: "3", name: "Bono", amount: 50.0 },
-        { id: "4", name: "Ingreso 1", amount: 200.0 },
-        { id: "5", name: "Otros", amount: 216.0 },
-    ]);
+import AnimatedNumber from "@/components/AnimatedNumber";
+import EditableList from "@/components/EditableList";
+import MetricCard from "@/components/MetricCard";
+import SavingsCard from "@/components/SavingsCard";
+import FinancialSummaryChart from "@/components/FinancialSummaryChart";
+import DistributionChart from "@/components/DistributionChart";
+import { COLORS, formatCurrency, type ListItem } from "@/lib/theme";
 
-    // State for fixed expenses
-    const [fixedExpenses, setFixedExpenses] = useState<ExpenseItem[]>([
-        { id: "1", name: "Renta (Apartamento)", amount: 315.22, type: "fixed" },
-        { id: "2", name: "Electricidad", amount: 25.0, type: "fixed" },
-        { id: "3", name: "Internet", amount: 35.0, type: "fixed" },
-        { id: "4", name: "Comida para la casa", amount: 110.0, type: "fixed" },
-        { id: "5", name: "Donación", amount: 12.0, type: "fixed" },
-        { id: "6", name: "Proyecciones para calefón", amount: 12.0, type: "fixed" },
-    ]);
+const initialIncomes: ListItem[] = [
+    { id: 1, name: "Salario EMQU", amount: 850 },
+];
 
-    // State for variable expenses
-    const [variableExpenses, setVariableExpenses] = useState<ExpenseItem[]>([
-        {
-            id: "1",
-            name: "Herramientas para equipo de voleibol",
-            amount: 67.0,
-            type: "variable",
-        },
-        { id: "2", name: "Pago al instructor de VB", amount: 8.0, type: "variable" },
-    ]);
+const initialFixedExpenses: ListItem[] = [
+    { id: 1, name: "Renta departamento", amount: 280.14 },
+    { id: 2, name: "Servicio de Internet", amount: 17.5 },
+    { id: 3, name: "Renta del teléfono", amount: 14 },
+    { id: 4, name: "Comida para la casa", amount: 200 },
+    { id: 5, name: "Mantenimiento bancolombia", amount: 8 },
+    { id: 6, name: "Gas, Agua, Electricidad", amount: 110 },
+    { id: 7, name: "Prime Video + Max", amount: 7 },
+];
 
-    // Calculate totals dynamically
-    const totalIncome = useMemo(
-        () => incomeItems.reduce((sum, item) => sum + item.amount, 0),
-        [incomeItems]
-    );
+const initialVariableExpenses: ListItem[] = [
+    { id: 1, name: "Deposito de la nueva casa", amount: 140 },
+];
 
-    const fixedTotal = useMemo(
-        () => fixedExpenses.reduce((sum, item) => sum + item.amount, 0),
-        [fixedExpenses]
-    );
+const EMERGENCY_GOAL = 2000;
+const EMERGENCY_SAVED = 560.3;
+const INVESTMENT_GOAL = 5000;
+const INVESTMENT_SAVED = 0;
 
-    const variableTotal = useMemo(
-        () => variableExpenses.reduce((sum, item) => sum + item.amount, 0),
-        [variableExpenses]
-    );
+export default function BudgetDashboard() {
+    const [incomes, setIncomes] = useState<ListItem[]>(initialIncomes);
+    const [fixedExpenses, setFixedExpenses] = useState<ListItem[]>(initialFixedExpenses);
+    const [variableExpenses, setVariableExpenses] = useState<ListItem[]>(initialVariableExpenses);
 
-    const totalExpenses = fixedTotal + variableTotal;
+    const totalIncome = incomes.reduce((s, i) => s + i.amount, 0);
+    const totalFixed = fixedExpenses.reduce((s, i) => s + i.amount, 0);
+    const totalVariable = variableExpenses.reduce((s, i) => s + i.amount, 0);
+    const totalExpenses = totalFixed + totalVariable;
+    const afterExpenses = totalIncome - totalExpenses;
 
-    // State for savings metrics (percentages and amounts)
-    const [emergencyFundPercentage, setEmergencyFundPercentage] = useState(11.8);
-    const [emergencyFundAmount, setEmergencyFundAmount] = useState(
-        (11.8 * 1416.0) / 100
-    );
-    const [investmentCapitalPercentage, setInvestmentCapitalPercentage] = useState(0.0);
-    const [investmentCapitalAmount, setInvestmentCapitalAmount] = useState(0.0);
+    const freePct = totalIncome > 0 ? (afterExpenses / totalIncome) * 100 : 0;
+    const fixedPct = totalIncome > 0 ? (totalFixed / totalIncome) * 100 : 0;
+    const totalExpPct = totalIncome > 0 ? (totalExpenses / totalIncome) * 100 : 0;
 
-    // Handlers for emergency fund
-    const handleEmergencyFundAmountChange = (amount: number) => {
-        setEmergencyFundAmount(amount);
-        // Calculate and update percentage: Percentage = (Amount / Total Income) * 100
-        if (totalIncome > 0) {
-            setEmergencyFundPercentage((amount / totalIncome) * 100);
-        }
-    };
+    const pieData = [
+        { name: "Gastos Fijos", value: totalFixed },
+        { name: "Gastos Variables", value: totalVariable },
+        { name: "Libre", value: Math.max(afterExpenses, 0) },
+    ];
 
-    const handleEmergencyFundPercentageChange = (percentage: number) => {
-        setEmergencyFundPercentage(percentage);
-        // Calculate and update amount: Amount = (Percentage * Total Income) / 100
-        setEmergencyFundAmount((percentage * totalIncome) / 100);
-    };
+    const barData = [
+        { name: "Ingresos", value: totalIncome, color: COLORS.income },
+        { name: "G. Fijos", value: totalFixed, color: COLORS.fixed },
+        { name: "G. Variables", value: totalVariable, color: COLORS.variable },
+        { name: "Disponible", value: Math.max(afterExpenses, 0), color: COLORS.accent },
+    ];
 
-    // Handlers for investment capital
-    const handleInvestmentCapitalAmountChange = (amount: number) => {
-        setInvestmentCapitalAmount(amount);
-        // Calculate and update percentage: Percentage = (Amount / Total Income) * 100
-        if (totalIncome > 0) {
-            setInvestmentCapitalPercentage((amount / totalIncome) * 100);
-        }
-    };
-
-    const handleInvestmentCapitalPercentageChange = (percentage: number) => {
-        setInvestmentCapitalPercentage(percentage);
-        // Calculate and update amount: Amount = (Percentage * Total Income) / 100
-        setInvestmentCapitalAmount((percentage * totalIncome) / 100);
-    };
-
-    const emergencyFund: SavingsMetric = {
-        id: "1",
-        title: "Fondo de Emergencia",
-        current: emergencyFundAmount,
-        goal: 167.09,
-        savingsPercentage: emergencyFundPercentage,
-        goalPercentage: 0.0,
-    };
-
-    const investmentCapital: SavingsMetric = {
-        id: "2",
-        title: "Capital de Inversión",
-        current: investmentCapitalAmount,
-        goal: 0.0,
-        savingsPercentage: investmentCapitalPercentage,
-        goalPercentage: 0.0,
-    };
-
-    const totalSavings = 0.0;
-
-    // Calculate total after expenses
-    // Total after expenses = Total Income - Total Expenses - Savings Amount - Investment Amount
-    const totalAfterExpenses = totalIncome - totalExpenses - emergencyFundAmount - investmentCapitalAmount;
-
-    // Calculate free money percentage
-    // Free money percentage = (Total after expenses / Total Income) * 100
-    const freeMoneyPercentage = totalIncome > 0 ? (totalAfterExpenses / totalIncome) * 100 : 0;
-
-    // Calculate fixed expenses percentage
-    // Fixed expenses percentage = (Fixed expenses / Total Income) * 100
-    const fixedExpensesPercentage = totalIncome > 0 ? (fixedTotal / totalIncome) * 100 : 0;
-
-    // Calculate total expenses percentage
-    // Total expenses percentage = (Total expenses / Total Income) * 100
-    const totalExpensesPercentage = totalIncome > 0 ? (totalExpenses / totalIncome) * 100 : 0;
+    const bottomMetrics = [
+        { label: "Dinero Disponible", value: formatCurrency(afterExpenses), color: COLORS.accent, pct: freePct },
+        { label: "% del Ingreso Libre", value: `${freePct.toFixed(2)}%`, color: COLORS.income, pct: freePct },
+        { label: "Gastos Fijos / Ingreso", value: `${fixedPct.toFixed(2)}%`, color: COLORS.fixed, pct: fixedPct },
+        { label: "Gastos Totales / Ingreso", value: `${totalExpPct.toFixed(2)}%`, color: COLORS.variable, pct: totalExpPct },
+    ];
 
     return (
-        <DashboardLayout>
-            {/* Top row: Income, Fixed Expenses, Variable Expenses - 3 separate columns */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
-                <div className="h-[400px]">
-                    {/* Column 1: Income */}
-                    <IncomeSection
-                        items={incomeItems}
-                        total={totalIncome}
-                        onItemsChange={setIncomeItems}
-                    />
-                </div>
+        <div style={{
+            minHeight: "100vh",
+            background: COLORS.bg,
+            fontFamily: "'DM Sans', sans-serif",
+            padding: "24px",
+            boxSizing: "border-box",
+        }}>
+            <style>{`
+                @import url('https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=DM+Sans:wght@400;500;600&display=swap');
+                * { box-sizing: border-box; }
+                @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+                input::placeholder { color: #4b5563; }
+                ::-webkit-scrollbar { width: 6px; }
+                ::-webkit-scrollbar-track { background: #0a0f1e; }
+                ::-webkit-scrollbar-thumb { background: #1f2937; border-radius: 3px; }
+            `}</style>
 
-                <div className="h-[400px]">
-                    {/* Column 2: Fixed Expenses */}
-                    <EditableExpensesList
-                        title="Gastos Mensuales Fijos"
-                        items={fixedExpenses}
-                        total={fixedTotal}
-                        type="fixed"
-                        onItemsChange={setFixedExpenses}
-                    />
+            {/* Header */}
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 32 }}>
+                <div>
+                    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                        <div style={{
+                            width: 40, height: 40, borderRadius: 12,
+                            background: `linear-gradient(135deg, ${COLORS.accent}, ${COLORS.investment})`,
+                            display: "flex", alignItems: "center", justifyContent: "center",
+                        }}>
+                            <Wallet size={20} color="#fff" />
+                        </div>
+                        <h1 style={{
+                            margin: 0, fontSize: 22, fontWeight: 800,
+                            fontFamily: "'Sora', sans-serif", color: COLORS.text,
+                            background: `linear-gradient(90deg, #f9fafb, ${COLORS.accent})`,
+                            WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
+                        }}>
+                            Budget Dashboard
+                        </h1>
+                    </div>
+                    <p style={{ margin: "4px 0 0 50px", color: COLORS.muted, fontSize: 13 }}>
+                        Control financiero personal · {new Date().toLocaleDateString("es-CO", { month: "long", year: "numeric" })}
+                    </p>
                 </div>
-
-                <div className="h-[400px]">
-                    {/* Column 3: Variable Expenses */}
-                    <EditableExpensesList
-                        title="Gastos Variables del Mes"
-                        items={variableExpenses}
-                        total={variableTotal}
-                        type="variable"
-                        onItemsChange={setVariableExpenses}
-                    />
+                <div style={{
+                    padding: "10px 20px", borderRadius: 12,
+                    background: afterExpenses >= 0 ? COLORS.income + "22" : COLORS.variable + "22",
+                    border: `1px solid ${afterExpenses >= 0 ? COLORS.income : COLORS.variable}44`,
+                    display: "flex", alignItems: "center", gap: 8,
+                }}>
+                    {afterExpenses >= 0
+                        ? <TrendingUp size={16} color={COLORS.income} />
+                        : <TrendingDown size={16} color={COLORS.variable} />
+                    }
+                    <span style={{
+                        color: afterExpenses >= 0 ? COLORS.income : COLORS.variable,
+                        fontWeight: 700, fontFamily: "'Sora', sans-serif", fontSize: 14,
+                    }}>
+                        {afterExpenses >= 0 ? "Balance Positivo" : "Balance Negativo"}
+                    </span>
                 </div>
             </div>
 
-            {/* Bottom section: Metrics and Savings */}
-            <div className="space-y-4">
-                {/* Metrics grid */}
-                <MetricsGrid
-                    totalAfterExpenses={totalAfterExpenses}
-                    totalExpenses={totalExpenses}
-                    incomeUsedPercentage={0}
-                    fixedExpensesPercentage={fixedExpensesPercentage}
-                    totalExpensesPercentage={totalExpensesPercentage}
-                    freeMoneyPercentage={freeMoneyPercentage}
+            {/* KPI Grid */}
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 16, marginBottom: 24 }}>
+                <MetricCard
+                    label="Total Ingresos"
+                    value={<AnimatedNumber value={totalIncome} />}
+                    color={COLORS.income}
+                    icon={TrendingUp}
+                    subtitle="Este mes"
                 />
-
-                {/* Savings section */}
-                <SavingsSection
-                    emergencyFund={emergencyFund}
-                    investmentCapital={investmentCapital}
-                    totalSavings={totalSavings}
-                    totalIncome={totalIncome}
-                    onEmergencyFundAmountChange={handleEmergencyFundAmountChange}
-                    onEmergencyFundPercentageChange={handleEmergencyFundPercentageChange}
-                    onInvestmentCapitalAmountChange={handleInvestmentCapitalAmountChange}
-                    onInvestmentCapitalPercentageChange={handleInvestmentCapitalPercentageChange}
+                <MetricCard
+                    label="Total Gastos"
+                    value={<AnimatedNumber value={totalExpenses} />}
+                    color={COLORS.variable}
+                    icon={TrendingDown}
+                    subtitle={`${totalExpPct.toFixed(1)}% del ingreso`}
+                    trend="down"
+                />
+                <MetricCard
+                    label="Disponible"
+                    value={<AnimatedNumber value={afterExpenses} />}
+                    color={COLORS.accent}
+                    icon={DollarSign}
+                    subtitle={`${freePct.toFixed(1)}% libre`}
+                    trend={afterExpenses >= 0 ? "up" : "down"}
+                />
+                <MetricCard
+                    label="% Gastos Fijos"
+                    value={`${fixedPct.toFixed(1)}%`}
+                    color={COLORS.fixed}
+                    icon={BarChart2}
+                    subtitle="Del ingreso mensual"
                 />
             </div>
-        </DashboardLayout>
+
+            {/* Listas editables */}
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 16, marginBottom: 24 }}>
+                <EditableList
+                    title="Fuentes de Ingresos"
+                    items={incomes}
+                    color={COLORS.income}
+                    icon={TrendingUp}
+                    onItemsChange={setIncomes}
+                />
+                <EditableList
+                    title="Gastos Mensuales Fijos"
+                    items={fixedExpenses}
+                    color={COLORS.fixed}
+                    icon={Target}
+                    onItemsChange={setFixedExpenses}
+                />
+                <EditableList
+                    title="Gastos Variables del Mes"
+                    items={variableExpenses}
+                    color={COLORS.variable}
+                    icon={BarChart2}
+                    onItemsChange={setVariableExpenses}
+                />
+            </div>
+
+            {/* Gráficas + Ahorros */}
+            <div style={{ display: "grid", gridTemplateColumns: "1.2fr 1fr 1fr 1fr", gap: 16, marginBottom: 24 }}>
+                <FinancialSummaryChart data={barData} />
+                <DistributionChart data={pieData} />
+                <SavingsCard
+                    title="Fondo de Emergencia"
+                    saved={EMERGENCY_SAVED}
+                    goal={EMERGENCY_GOAL}
+                    color={COLORS.savings}
+                    icon={Shield}
+                />
+                <SavingsCard
+                    title="Capital de Inversión"
+                    saved={INVESTMENT_SAVED}
+                    goal={INVESTMENT_GOAL}
+                    color={COLORS.investment}
+                    icon={TrendingUp}
+                />
+            </div>
+
+            {/* Métricas inferiores */}
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 16 }}>
+                {bottomMetrics.map((m, i) => (
+                    <div key={i} style={{
+                        background: COLORS.card,
+                        border: `1px solid ${COLORS.cardBorder}`,
+                        borderRadius: 16,
+                        padding: 20,
+                    }}>
+                        <div style={{ color: COLORS.muted, fontSize: 11, fontFamily: "'DM Sans', sans-serif", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 8 }}>
+                            {m.label}
+                        </div>
+                        <div style={{ color: m.color, fontSize: 22, fontWeight: 800, fontFamily: "'Sora', sans-serif", marginBottom: 12 }}>
+                            {m.value}
+                        </div>
+                        <div style={{ height: 4, borderRadius: 4, background: "#1f2937", overflow: "hidden" }}>
+                            <div style={{
+                                height: "100%", borderRadius: 4,
+                                width: `${Math.min(m.pct, 100)}%`,
+                                background: m.color,
+                                transition: "width 1s ease",
+                            }} />
+                        </div>
+                    </div>
+                ))}
+            </div>
+        </div>
     );
 }
-
