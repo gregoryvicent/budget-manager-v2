@@ -9,6 +9,7 @@ import MetricCard from "@/components/MetricCard";
 import SavingsCard from "@/components/SavingsCard";
 import FinancialSummaryChart from "@/components/FinancialSummaryChart";
 import DistributionChart from "@/components/DistributionChart";
+import Sidebar from "@/components/Sidebar";
 import { COLORS, type ListItem } from "@/lib/theme";
 
 const initialIncomes: ListItem[] = [
@@ -40,6 +41,9 @@ export default function BudgetDashboard() {
     const [variableExpenses, setVariableExpenses] = useState<ListItem[]>(initialVariableExpenses);
     const [savingsPct, setSavingsPct] = useState(10);
     const [investmentPct, setInvestmentPct] = useState(10);
+    const [sidebarOpen, setSidebarOpen] = useState(false);
+    const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+    const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
 
     const totalIncome = incomes.reduce((s, i) => s + i.amount, 0);
     const totalFixed = fixedExpenses.reduce((s, i) => s + i.amount, 0);
@@ -172,7 +176,7 @@ export default function BudgetDashboard() {
                     onItemsChange={setIncomes}
                 />
                 <EditableList
-                    title="Gastos Mensuales Fijos"
+                    title="Gastos Fijos del Mes"
                     items={fixedExpenses}
                     color={COLORS.fixed}
                     icon={Target}
@@ -213,6 +217,13 @@ export default function BudgetDashboard() {
                 <DistributionChart data={pieData} totalIncome={totalIncome} />
             </div>
 
+            <Sidebar
+                open={sidebarOpen}
+                onToggle={() => setSidebarOpen(o => !o)}
+                selectedYear={selectedYear}
+                selectedMonth={selectedMonth}
+                onMonthSelect={(year, month) => { setSelectedYear(year); setSelectedMonth(month); }}
+            />
         </div>
     );
 }
