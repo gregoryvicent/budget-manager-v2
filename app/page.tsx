@@ -9,7 +9,7 @@ import MetricCard from "@/components/MetricCard";
 import SavingsCard from "@/components/SavingsCard";
 import FinancialSummaryChart from "@/components/FinancialSummaryChart";
 import DistributionChart from "@/components/DistributionChart";
-import { COLORS, formatCurrency, type ListItem } from "@/lib/theme";
+import { COLORS, type ListItem } from "@/lib/theme";
 
 const initialIncomes: ListItem[] = [
     { id: 1, name: "Salario EMQU", amount: 850 },
@@ -38,20 +38,26 @@ export default function BudgetDashboard() {
     const [incomes, setIncomes] = useState<ListItem[]>(initialIncomes);
     const [fixedExpenses, setFixedExpenses] = useState<ListItem[]>(initialFixedExpenses);
     const [variableExpenses, setVariableExpenses] = useState<ListItem[]>(initialVariableExpenses);
+    const [savingsPct, setSavingsPct] = useState(10);
+    const [investmentPct, setInvestmentPct] = useState(10);
 
     const totalIncome = incomes.reduce((s, i) => s + i.amount, 0);
     const totalFixed = fixedExpenses.reduce((s, i) => s + i.amount, 0);
     const totalVariable = variableExpenses.reduce((s, i) => s + i.amount, 0);
     const totalExpenses = totalFixed + totalVariable;
-    const afterExpenses = totalIncome - totalExpenses;
+    const savingsAllocation = totalIncome * (savingsPct / 100);
+    const investmentAllocation = totalIncome * (investmentPct / 100);
+    const afterExpenses = totalIncome - totalExpenses - savingsAllocation - investmentAllocation;
 
     const freePct = totalIncome > 0 ? (afterExpenses / totalIncome) * 100 : 0;
-    const fixedPct = totalIncome > 0 ? (totalFixed / totalIncome) * 100 : 0;
+
     const totalExpPct = totalIncome > 0 ? (totalExpenses / totalIncome) * 100 : 0;
 
     const pieData = [
         { name: "Gastos Fijos", value: totalFixed },
         { name: "Gastos Variables", value: totalVariable },
+        { name: "Ahorros", value: savingsAllocation },
+        { name: "Inversiones", value: investmentAllocation },
         { name: "Libre", value: Math.max(afterExpenses, 0) },
     ];
 
@@ -59,15 +65,11 @@ export default function BudgetDashboard() {
         { name: "Ingresos", value: totalIncome, color: COLORS.income },
         { name: "G. Fijos", value: totalFixed, color: COLORS.fixed },
         { name: "G. Variables", value: totalVariable, color: COLORS.variable },
+        { name: "Ahorros", value: savingsAllocation, color: COLORS.savings },
+        { name: "Inversiones", value: investmentAllocation, color: COLORS.investment },
         { name: "Disponible", value: Math.max(afterExpenses, 0), color: COLORS.accent },
     ];
 
-    const bottomMetrics = [
-        { label: "Dinero Disponible", value: formatCurrency(afterExpenses), color: COLORS.accent, pct: freePct },
-        { label: "% del Ingreso Libre", value: `${freePct.toFixed(2)}%`, color: COLORS.income, pct: freePct },
-        { label: "Gastos Fijos / Ingreso", value: `${fixedPct.toFixed(2)}%`, color: COLORS.fixed, pct: fixedPct },
-        { label: "Gastos Totales / Ingreso", value: `${totalExpPct.toFixed(2)}%`, color: COLORS.variable, pct: totalExpPct },
-    ];
 
     return (
         <div style={{
@@ -85,6 +87,9 @@ export default function BudgetDashboard() {
                 ::-webkit-scrollbar { width: 6px; }
                 ::-webkit-scrollbar-track { background: #0a0f1e; }
                 ::-webkit-scrollbar-thumb { background: #1f2937; border-radius: 3px; }
+                input[type=number]::-webkit-inner-spin-button,
+                input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; appearance: none; }
+                input[type=number] { -moz-appearance: textfield; }
             `}</style>
 
             {/* Header */}
@@ -131,7 +136,7 @@ export default function BudgetDashboard() {
             </div>
 
             {/* KPI Grid */}
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 16, marginBottom: 24 }}>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16, marginBottom: 24 }}>
                 <MetricCard
                     label="Total Ingresos"
                     value={<AnimatedNumber value={totalIncome} />}
@@ -154,13 +159,6 @@ export default function BudgetDashboard() {
                     icon={DollarSign}
                     subtitle={`${freePct.toFixed(1)}% libre`}
                     trend={afterExpenses >= 0 ? "up" : "down"}
-                />
-                <MetricCard
-                    label="% Gastos Fijos"
-                    value={`${fixedPct.toFixed(1)}%`}
-                    color={COLORS.fixed}
-                    icon={BarChart2}
-                    subtitle="Del ingreso mensual"
                 />
             </div>
 
@@ -189,52 +187,32 @@ export default function BudgetDashboard() {
                 />
             </div>
 
-            {/* Gráficas + Ahorros */}
-            <div style={{ display: "grid", gridTemplateColumns: "1.2fr 1fr 1fr 1fr", gap: 16, marginBottom: 24 }}>
-                <FinancialSummaryChart data={barData} />
-                <DistributionChart data={pieData} />
+            {/* Ahorros + Gráficas */}
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 24 }}>
                 <SavingsCard
-                    title="Fondo de Emergencia"
+                    title="Ahorros"
                     saved={EMERGENCY_SAVED}
                     goal={EMERGENCY_GOAL}
                     color={COLORS.savings}
                     icon={Shield}
+                    allocationPct={savingsPct}
+                    monthlyAllocation={savingsAllocation}
+                    onAllocationPctChange={setSavingsPct}
                 />
                 <SavingsCard
-                    title="Capital de Inversión"
+                    title="Inversiones"
                     saved={INVESTMENT_SAVED}
                     goal={INVESTMENT_GOAL}
                     color={COLORS.investment}
                     icon={TrendingUp}
+                    allocationPct={investmentPct}
+                    monthlyAllocation={investmentAllocation}
+                    onAllocationPctChange={setInvestmentPct}
                 />
+                <FinancialSummaryChart data={barData} totalIncome={totalIncome} />
+                <DistributionChart data={pieData} totalIncome={totalIncome} />
             </div>
 
-            {/* Métricas inferiores */}
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 16 }}>
-                {bottomMetrics.map((m, i) => (
-                    <div key={i} style={{
-                        background: COLORS.card,
-                        border: `1px solid ${COLORS.cardBorder}`,
-                        borderRadius: 16,
-                        padding: 20,
-                    }}>
-                        <div style={{ color: COLORS.muted, fontSize: 11, fontFamily: "'DM Sans', sans-serif", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 8 }}>
-                            {m.label}
-                        </div>
-                        <div style={{ color: m.color, fontSize: 22, fontWeight: 800, fontFamily: "'Sora', sans-serif", marginBottom: 12 }}>
-                            {m.value}
-                        </div>
-                        <div style={{ height: 4, borderRadius: 4, background: "#1f2937", overflow: "hidden" }}>
-                            <div style={{
-                                height: "100%", borderRadius: 4,
-                                width: `${Math.min(m.pct, 100)}%`,
-                                background: m.color,
-                                transition: "width 1s ease",
-                            }} />
-                        </div>
-                    </div>
-                ))}
-            </div>
         </div>
     );
 }
