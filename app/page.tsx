@@ -58,20 +58,26 @@ export default function BudgetDashboard() {
     const totalExpPct = totalIncome > 0 ? (totalExpenses / totalIncome) * 100 : 0;
 
     const pieData = [
-        { name: "Gastos Fijos", value: totalFixed },
-        { name: "Gastos Variables", value: totalVariable },
-        { name: "Ahorros", value: savingsAllocation },
-        { name: "Inversiones", value: investmentAllocation },
-        { name: "Libre", value: Math.max(afterExpenses, 0) },
-    ];
-
-    const barData = [
-        { name: "Ingresos", value: totalIncome, color: COLORS.income },
-        { name: "G. Fijos", value: totalFixed, color: COLORS.fixed },
-        { name: "G. Variables", value: totalVariable, color: COLORS.variable },
+        { name: "Gastos fijos", value: totalFixed, color: COLORS.fixed },
+        { name: "Gastos del mes", value: totalVariable, color: COLORS.variable },
         { name: "Ahorros", value: savingsAllocation, color: COLORS.savings },
         { name: "Inversiones", value: investmentAllocation, color: COLORS.investment },
-        { name: "Disponible", value: Math.max(afterExpenses, 0), color: COLORS.accent },
+        afterExpenses >= 0
+            ? { name: "Me queda libre", value: afterExpenses, color: COLORS.accent }
+            : { name: "Déficit", value: Math.abs(afterExpenses), color: "#f43f5e" },
+    ].filter(d => d.value > 0);
+
+    const barData = [
+        { name: "Gané", value: totalIncome, color: COLORS.income },
+        { name: "Gastos fijos", value: totalFixed, color: COLORS.fixed },
+        { name: "Gastos del mes", value: totalVariable, color: COLORS.variable },
+        { name: "Ahorros", value: savingsAllocation, color: COLORS.savings },
+        { name: "Inversiones", value: investmentAllocation, color: COLORS.investment },
+        {
+            name: afterExpenses >= 0 ? "Me queda libre" : "Déficit",
+            value: afterExpenses,
+            color: afterExpenses >= 0 ? COLORS.accent : "#f43f5e",
+        },
     ];
 
 

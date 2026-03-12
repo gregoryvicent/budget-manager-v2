@@ -14,7 +14,7 @@ interface FinancialSummaryChartProps {
 }
 
 export default function FinancialSummaryChart({ data, totalIncome }: FinancialSummaryChartProps) {
-    const max = Math.max(...data.map((d) => d.value));
+    const max = Math.max(...data.map((d) => Math.abs(d.value)));
 
     return (
         <div style={{
@@ -38,8 +38,9 @@ export default function FinancialSummaryChart({ data, totalIncome }: FinancialSu
 
             <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
                 {data.map((item, i) => {
-                    const pct = totalIncome > 0 ? (item.value / totalIncome) * 100 : 0;
-                    const barWidth = max > 0 ? (item.value / max) * 100 : 0;
+                    const isDeficit = item.value < 0;
+                    const pct = totalIncome > 0 ? (Math.abs(item.value) / totalIncome) * 100 : 0;
+                    const barWidth = max > 0 ? (Math.abs(item.value) / max) * 100 : 0;
                     return (
                         <div key={i} style={{ display: "flex", flexDirection: "column", gap: 5 }}>
                             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
@@ -60,13 +61,14 @@ export default function FinancialSummaryChart({ data, totalIncome }: FinancialSu
                                         color: item.color, fontSize: 11, fontWeight: 700,
                                         fontFamily: "'Sora', sans-serif", minWidth: 38, textAlign: "right",
                                     }}>
-                                        {pct.toFixed(1)}%
+                                        {isDeficit ? "-" : ""}{pct.toFixed(1)}%
                                     </span>
                                     <span style={{
-                                        color: COLORS.text, fontSize: 12, fontWeight: 600,
+                                        color: isDeficit ? item.color : COLORS.text,
+                                        fontSize: 12, fontWeight: 600,
                                         fontFamily: "'Sora', sans-serif", minWidth: 64, textAlign: "right",
                                     }}>
-                                        {formatCurrency(item.value)}
+                                        {isDeficit ? "-" : ""}{formatCurrency(Math.abs(item.value))}
                                     </span>
                                 </div>
                             </div>
@@ -75,7 +77,9 @@ export default function FinancialSummaryChart({ data, totalIncome }: FinancialSu
                                     height: "100%",
                                     width: `${barWidth}%`,
                                     borderRadius: 4,
-                                    background: `linear-gradient(90deg, ${item.color}cc, ${item.color})`,
+                                    background: isDeficit
+                                        ? `repeating-linear-gradient(45deg, ${item.color}99, ${item.color}99 4px, transparent 4px, transparent 8px)`
+                                        : `linear-gradient(90deg, ${item.color}cc, ${item.color})`,
                                     transition: "width 0.8s ease",
                                 }} />
                             </div>

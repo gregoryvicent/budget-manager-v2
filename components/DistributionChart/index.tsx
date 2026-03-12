@@ -6,9 +6,8 @@ import { COLORS, formatCurrency } from "@/lib/theme";
 export interface PieDataItem {
     name: string;
     value: number;
+    color: string;
 }
-
-const PIE_COLORS = [COLORS.fixed, COLORS.variable, COLORS.savings, COLORS.investment, COLORS.income];
 
 interface DistributionChartProps {
     data: PieDataItem[];
@@ -21,27 +20,22 @@ interface CustomLabelProps {
     midAngle?: number;
     outerRadius?: number;
     name?: string;
-    value?: number;
     percent?: number;
-    index?: number;
+    fill?: string;
 }
 
 const RADIAN = Math.PI / 180;
 
-function CustomLabel({ cx = 0, cy = 0, midAngle = 0, outerRadius = 0, name = "", percent = 0, index = 0 }: CustomLabelProps) {
+function CustomLabel({ cx = 0, cy = 0, midAngle = 0, outerRadius = 0, name = "", percent = 0, fill = "#fff" }: CustomLabelProps) {
     const pct = (percent * 100).toFixed(1);
-    const color = PIE_COLORS[index];
 
-    // Punto de inicio de la línea (borde exterior del segmento)
     const lineStart = outerRadius + 4;
     const sx = cx + lineStart * Math.cos(-midAngle * RADIAN);
     const sy = cy + lineStart * Math.sin(-midAngle * RADIAN);
 
-    // Punto intermedio
     const mx = cx + (outerRadius + 20) * Math.cos(-midAngle * RADIAN);
     const my = cy + (outerRadius + 20) * Math.sin(-midAngle * RADIAN);
 
-    // Punto final (donde aparece el texto)
     const isRight = mx > cx;
     const ex = mx + (isRight ? 12 : -12);
     const ey = my;
@@ -52,12 +46,12 @@ function CustomLabel({ cx = 0, cy = 0, midAngle = 0, outerRadius = 0, name = "",
         <g>
             <path
                 d={`M${sx},${sy} L${mx},${my} L${ex},${ey}`}
-                stroke={color}
+                stroke={fill}
                 strokeWidth={1}
                 fill="none"
                 opacity={0.6}
             />
-            <circle cx={ex} cy={ey} r={2} fill={color} />
+            <circle cx={ex} cy={ey} r={2} fill={fill} />
             <text
                 x={ex + (isRight ? 5 : -5)}
                 y={ey - 6}
@@ -72,7 +66,7 @@ function CustomLabel({ cx = 0, cy = 0, midAngle = 0, outerRadius = 0, name = "",
                 x={ex + (isRight ? 5 : -5)}
                 y={ey + 6}
                 textAnchor={textAnchor}
-                fill={color}
+                fill={fill}
                 fontSize={11}
                 fontWeight={700}
                 fontFamily="'Sora', sans-serif"
@@ -87,8 +81,7 @@ function CustomLabel({ cx = 0, cy = 0, midAngle = 0, outerRadius = 0, name = "",
 function CustomTooltip({ active, payload }: any) {
     if (!active || !payload?.length) return null;
     const entry = payload[0];
-    const index = data_ref.findIndex((d) => d.name === entry.name);
-    const color = PIE_COLORS[index] ?? "#f9fafb";
+    const color: string = entry.payload?.color ?? "#f9fafb";
     return (
         <div style={{
             background: "#1f2937",
@@ -107,10 +100,7 @@ function CustomTooltip({ active, payload }: any) {
     );
 }
 
-let data_ref: PieDataItem[] = [];
-
-export default function DistributionChart({ data, totalIncome: _totalIncome }: DistributionChartProps) {
-    data_ref = data;
+export default function DistributionChart({ data }: DistributionChartProps) {
     return (
         <div style={{
             background: COLORS.card,
@@ -146,8 +136,8 @@ export default function DistributionChart({ data, totalIncome: _totalIncome }: D
                             labelLine={false}
                             label={CustomLabel}
                         >
-                            {data.map((_, i) => (
-                                <Cell key={i} fill={PIE_COLORS[i]} stroke="transparent" />
+                            {data.map((item, i) => (
+                                <Cell key={i} fill={item.color} stroke="transparent" />
                             ))}
                         </Pie>
                         <Tooltip content={<CustomTooltip />} />
