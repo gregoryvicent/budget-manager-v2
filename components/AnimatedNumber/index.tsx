@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { ANIMATION_DURATIONS } from "@/lib/theme";
 
 interface AnimatedNumberProps {
     value: number;
@@ -8,14 +9,15 @@ interface AnimatedNumberProps {
     suffix?: string;
 }
 
+const FRAME_MS = 16;
+
 export default function AnimatedNumber({ value, prefix = "$", suffix = "" }: AnimatedNumberProps) {
     const [display, setDisplay] = useState(0);
 
     useEffect(() => {
         let start = 0;
         const end = value;
-        const duration = 800;
-        const step = (end - start) / (duration / 16);
+        const step = (end - start) / (ANIMATION_DURATIONS.number / FRAME_MS);
         const timer = setInterval(() => {
             start += step;
             if ((step > 0 && start >= end) || (step < 0 && start <= end)) {
@@ -24,7 +26,7 @@ export default function AnimatedNumber({ value, prefix = "$", suffix = "" }: Ani
             } else {
                 setDisplay(start);
             }
-        }, 16);
+        }, FRAME_MS);
         return () => clearInterval(timer);
     }, [value]);
 

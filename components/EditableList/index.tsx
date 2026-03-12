@@ -2,7 +2,10 @@
 
 import { useState } from "react";
 import { Plus, Trash2, Check, X } from "lucide-react";
-import { COLORS, formatCurrency, type ListItem } from "@/lib/theme";
+import {
+    COLORS, FONTS, FONT_SIZES, FONT_WEIGHTS, RADIUS, SPACING,
+    TRANSITIONS, CARD_STYLE, formatCurrency, type ListItem,
+} from "@/lib/theme";
 
 interface EditableListProps {
     title: string;
@@ -13,11 +16,11 @@ interface EditableListProps {
 }
 
 export default function EditableList({ title, items, color, icon: Icon, onItemsChange }: EditableListProps) {
-    const [newName, setNewName] = useState("");
-    const [newAmount, setNewAmount] = useState("");
-    const [adding, setAdding] = useState(false);
-    const [editingId, setEditingId] = useState<number | null>(null);
-    const [editName, setEditName] = useState("");
+    const [newName, setNewName]       = useState("");
+    const [newAmount, setNewAmount]   = useState("");
+    const [adding, setAdding]         = useState(false);
+    const [editingId, setEditingId]   = useState<number | null>(null);
+    const [editName, setEditName]     = useState("");
     const [editAmount, setEditAmount] = useState("");
 
     const total = items.reduce((s, i) => s + i.amount, 0);
@@ -40,10 +43,7 @@ export default function EditableList({ title, items, color, icon: Icon, onItemsC
 
     const confirmEdit = () => {
         const parsed = parseFloat(editAmount);
-        if (!editName.trim() || isNaN(parsed) || parsed < 0) {
-            cancelEdit();
-            return;
-        }
+        if (!editName.trim() || isNaN(parsed) || parsed < 0) { cancelEdit(); return; }
         onItemsChange(items.map(i => i.id === editingId ? { ...i, name: editName.trim(), amount: parsed } : i));
         setEditingId(null);
     };
@@ -51,67 +51,60 @@ export default function EditableList({ title, items, color, icon: Icon, onItemsC
     const cancelEdit = () => setEditingId(null);
 
     const handleEditKeyDown = (e: React.KeyboardEvent) => {
-        if (e.key === "Enter") confirmEdit();
+        if (e.key === "Enter")  confirmEdit();
         if (e.key === "Escape") cancelEdit();
     };
 
     const inputStyle = (flex: number): React.CSSProperties => ({
         flex,
-        padding: "5px 8px",
-        borderRadius: 7,
-        background: "#0a0f1e",
-        border: `1px solid ${color}55`,
-        color: COLORS.text,
-        fontSize: 13,
-        fontFamily: "'DM Sans', sans-serif",
-        outline: "none",
-        minWidth: 0,
+        padding:      `5px ${SPACING["2"]}px`,
+        borderRadius: RADIUS.md,
+        background:   COLORS.bg,
+        border:       `1px solid ${color}55`,
+        color:        COLORS.text,
+        fontSize:     FONT_SIZES.body,
+        fontFamily:   FONTS.body,
+        outline:      "none",
+        minWidth:     0,
     });
 
     return (
-        <div style={{
-            background: COLORS.card,
-            border: `1px solid ${COLORS.cardBorder}`,
-            borderRadius: 16,
-            padding: 24,
-            display: "flex",
-            flexDirection: "column",
-            gap: 12,
-            height: 380,
-        }}>
+        <div style={{ ...CARD_STYLE, gap: SPACING["3"], height: 380 }}>
             {/* Header */}
-            <div style={{ display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: SPACING["2"] + 2, flexShrink: 0 }}>
                 <div style={{
-                    width: 36, height: 36, borderRadius: 10,
+                    width: 36, height: 36, borderRadius: RADIUS.lg,
                     background: color + "22",
                     display: "flex", alignItems: "center", justifyContent: "center",
                 }}>
                     <Icon size={18} color={color} />
                 </div>
-                <span style={{ fontFamily: "'Sora', sans-serif", fontWeight: 700, fontSize: 16, color: COLORS.text }}>
+                <span style={{
+                    fontFamily: FONTS.heading,
+                    fontWeight: FONT_WEIGHTS.bold,
+                    fontSize:   FONT_SIZES.xl,
+                    color:      COLORS.text,
+                }}>
                     {title}
                 </span>
             </div>
 
             {/* Lista con scroll */}
             <div style={{
-                flex: 1,
-                overflowY: "auto",
-                display: "flex",
-                flexDirection: "column",
-                gap: 8,
-                paddingRight: 4,
+                flex: 1, overflowY: "auto",
+                display: "flex", flexDirection: "column",
+                gap: SPACING["2"], paddingRight: SPACING["1"],
             }}>
                 {items.map(item => (
                     <div key={item.id} style={{
-                        display: "flex", alignItems: "center", gap: 8,
-                        padding: "8px 12px",
-                        background: "#0f172a",
-                        borderRadius: 10,
-                        flexShrink: 0,
-                        animation: "fadeIn 0.3s ease",
-                        border: editingId === item.id ? `1px solid ${color}44` : "1px solid transparent",
-                        transition: "border-color 0.2s",
+                        display: "flex", alignItems: "center", gap: SPACING["2"],
+                        padding:      `${SPACING["2"]}px ${SPACING["3"]}px`,
+                        background:   COLORS.surface,
+                        borderRadius: RADIUS.lg,
+                        flexShrink:   0,
+                        animation:    "fadeIn 0.3s ease",
+                        border:       editingId === item.id ? `1px solid ${color}44` : "1px solid transparent",
+                        transition:   `border-color ${TRANSITIONS.base}`,
                     }}>
                         {editingId === item.id ? (
                             <>
@@ -126,8 +119,7 @@ export default function EditableList({ title, items, color, icon: Icon, onItemsC
                                     value={editAmount}
                                     onChange={e => setEditAmount(e.target.value)}
                                     onKeyDown={handleEditKeyDown}
-                                    type="number"
-                                    min={0}
+                                    type="number" min={0}
                                     style={inputStyle(1)}
                                 />
                                 <button
@@ -147,21 +139,21 @@ export default function EditableList({ title, items, color, icon: Icon, onItemsC
                             <>
                                 <span
                                     onClick={() => startEdit(item)}
-                                    style={{ color: "#cbd5e1", fontSize: 13, fontFamily: "'DM Sans', sans-serif", flex: 1, cursor: "pointer" }}
+                                    style={{ color: COLORS.textDim, fontSize: FONT_SIZES.body, fontFamily: FONTS.body, flex: 1, cursor: "pointer" }}
                                 >
                                     {item.name}
                                 </span>
                                 <span
                                     onClick={() => startEdit(item)}
-                                    style={{ color, fontWeight: 700, fontSize: 14, fontFamily: "'Sora', sans-serif", cursor: "pointer", flexShrink: 0 }}
+                                    style={{ color, fontWeight: FONT_WEIGHTS.bold, fontSize: FONT_SIZES.base, fontFamily: FONTS.heading, cursor: "pointer", flexShrink: 0 }}
                                 >
                                     {formatCurrency(item.amount)}
                                 </span>
                                 <button
                                     onClick={() => removeItem(item.id)}
-                                    style={{ background: "none", border: "none", cursor: "pointer", color: "#4b5563", padding: 2, flexShrink: 0, transition: "color 0.2s" }}
-                                    onMouseOver={e => (e.currentTarget as HTMLButtonElement).style.color = "#ef4444"}
-                                    onMouseOut={e => (e.currentTarget as HTMLButtonElement).style.color = "#4b5563"}
+                                    style={{ background: "none", border: "none", cursor: "pointer", color: COLORS.muted, padding: 2, flexShrink: 0, transition: `color ${TRANSITIONS.base}` }}
+                                    onMouseOver={e => (e.currentTarget as HTMLButtonElement).style.color = COLORS.variable}
+                                    onMouseOut={e  => (e.currentTarget as HTMLButtonElement).style.color = COLORS.muted}
                                 >
                                     <Trash2 size={14} />
                                 </button>
@@ -173,17 +165,17 @@ export default function EditableList({ title, items, color, icon: Icon, onItemsC
 
             {/* Botón añadir */}
             {adding ? (
-                <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
+                <div style={{ display: "flex", gap: SPACING["2"], flexShrink: 0 }}>
                     <input
                         placeholder="Nombre"
                         value={newName}
                         onChange={e => setNewName(e.target.value)}
                         onKeyDown={e => { if (e.key === "Enter") addItem(); if (e.key === "Escape") setAdding(false); }}
                         style={{
-                            flex: 2, padding: "8px 12px", borderRadius: 8,
-                            background: "#0f172a", border: `1px solid ${color}44`,
-                            color: COLORS.text, fontSize: 13, fontFamily: "'DM Sans', sans-serif",
-                            outline: "none",
+                            flex: 2, padding: `${SPACING["2"]}px ${SPACING["3"]}px`,
+                            borderRadius: RADIUS.md,
+                            background: COLORS.surface, border: `1px solid ${color}44`,
+                            color: COLORS.text, fontSize: FONT_SIZES.body, fontFamily: FONTS.body, outline: "none",
                         }}
                     />
                     <input
@@ -193,17 +185,18 @@ export default function EditableList({ title, items, color, icon: Icon, onItemsC
                         onChange={e => setNewAmount(e.target.value)}
                         onKeyDown={e => { if (e.key === "Enter") addItem(); if (e.key === "Escape") setAdding(false); }}
                         style={{
-                            flex: 1, padding: "8px 12px", borderRadius: 8,
-                            background: "#0f172a", border: `1px solid ${color}44`,
-                            color: COLORS.text, fontSize: 13, fontFamily: "'DM Sans', sans-serif",
-                            outline: "none",
+                            flex: 1, padding: `${SPACING["2"]}px ${SPACING["3"]}px`,
+                            borderRadius: RADIUS.md,
+                            background: COLORS.surface, border: `1px solid ${color}44`,
+                            color: COLORS.text, fontSize: FONT_SIZES.body, fontFamily: FONTS.body, outline: "none",
                         }}
                     />
                     <button
                         onClick={addItem}
                         style={{
-                            padding: "8px 14px", borderRadius: 8, border: "none",
-                            background: color, color: "#fff", cursor: "pointer", fontWeight: 600, fontSize: 13,
+                            padding: `${SPACING["2"]}px 14px`, borderRadius: RADIUS.md, border: "none",
+                            background: color, color: "#fff", cursor: "pointer",
+                            fontWeight: FONT_WEIGHTS.semibold, fontSize: FONT_SIZES.body,
                         }}
                     >
                         OK
@@ -214,9 +207,11 @@ export default function EditableList({ title, items, color, icon: Icon, onItemsC
                     onClick={() => setAdding(true)}
                     style={{
                         display: "flex", alignItems: "center", gap: 6, flexShrink: 0,
-                        padding: "8px 12px", borderRadius: 10, border: `1px dashed ${color}55`,
-                        background: "none", color, cursor: "pointer", fontSize: 13,
-                        fontFamily: "'DM Sans', sans-serif", transition: "all 0.2s",
+                        padding: `${SPACING["2"]}px ${SPACING["3"]}px`,
+                        borderRadius: RADIUS.lg, border: `1px dashed ${color}55`,
+                        background: "none", color, cursor: "pointer",
+                        fontSize: FONT_SIZES.body, fontFamily: FONTS.body,
+                        transition: `all ${TRANSITIONS.base}`,
                     }}
                 >
                     <Plus size={14} /> Añadir
@@ -225,12 +220,12 @@ export default function EditableList({ title, items, color, icon: Icon, onItemsC
 
             {/* Total */}
             <div style={{
-                paddingTop: 12, flexShrink: 0,
+                paddingTop: SPACING["3"], flexShrink: 0,
                 borderTop: `1px solid ${COLORS.cardBorder}`,
                 display: "flex", justifyContent: "space-between", alignItems: "center",
             }}>
-                <span style={{ color: COLORS.muted, fontSize: 13, fontFamily: "'DM Sans', sans-serif" }}>Total</span>
-                <span style={{ color, fontWeight: 800, fontSize: 18, fontFamily: "'Sora', sans-serif" }}>
+                <span style={{ color: COLORS.muted, fontSize: FONT_SIZES.body, fontFamily: FONTS.body }}>Total</span>
+                <span style={{ color, fontWeight: FONT_WEIGHTS.extrabold, fontSize: FONT_SIZES["2xl"], fontFamily: FONTS.heading }}>
                     {formatCurrency(total)}
                 </span>
             </div>
