@@ -2,12 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { ANIMATION_DURATIONS } from "@/lib/theme";
-
-interface AnimatedNumberProps {
-    value: number;
-    prefix?: string;
-    suffix?: string;
-}
+import { AnimatedNumberProps } from "./types/AnimatedNumberProps";
 
 const FRAME_MS = 16;
 

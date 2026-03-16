@@ -65,13 +65,17 @@ export const LETTER_SPACING = {
 // ─── Spacing ─────────────────────────────────────────────────────────────────
 
 export const SPACING = {
-    "1":  4,
-    "2":  8,
-    "3":  12,
-    "4":  16,
-    "5":  20,
-    "6":  24,
-    "7":  28,
+    "1":   4,
+    "1.5": 6,
+    "2":   8,
+    "2.5": 10,
+    "3":   12,
+    "3.5": 14,
+    "4":   16,
+    "5":   20,
+    "6":   24,
+    "7":   28,
+    "8":   32,
 } as const;
 
 // ─── Border Radius ───────────────────────────────────────────────────────────
@@ -81,6 +85,7 @@ export const RADIUS = {
     md:   8,   // botones, inputs, contenedores pequeños
     lg:   10,  // cajas de ícono, badges
     xl:   12,  // elementos del header
+    "2xl": 14, // cajas de ícono grandes, badges prominentes
     card: 16,  // tarjetas y paneles
 } as const;
 
@@ -138,21 +143,22 @@ export const PROGRESS_BAR_TRACK: React.CSSProperties = {
     display:      "flex",
 };
 
-// ─── Tipos ───────────────────────────────────────────────────────────────────
-
-export type ListItem = {
-    id:     number;
-    name:   string;
-    amount: number;
-};
-
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
-export function formatCurrency(val: number): string {
-    return `$${val.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-}
+/**
+ * Formatea un número como moneda en formato USD.
+ *
+ * @param {number} val - Valor numérico a formatear.
+ * @returns {string} Cadena con formato "$X,XXX.XX".
+ */
+export const formatCurrency = (val: number): string =>
+    `$${val.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
-/** Añade opacidad en hex a un color. e.g. withAlpha(COLORS.accent, "30") */
-export function withAlpha(color: string, hex: string): string {
-    return color + hex;
-}
+/**
+ * Añade opacidad en hex a un color.
+ *
+ * @param {string} color - Color base en formato hex (ej. "#10b981").
+ * @param {string} hex - Sufijo de opacidad en hex (ej. "30").
+ * @returns {string} Color con opacidad aplicada (ej. "#10b98130").
+ */
+export const withAlpha = (color: string, hex: string): string => color + hex;

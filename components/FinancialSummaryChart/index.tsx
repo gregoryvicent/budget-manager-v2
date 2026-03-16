@@ -1,19 +1,9 @@
 "use client";
 
 import {
-    COLORS, FONTS, FONT_SIZES, FONT_WEIGHTS, RADIUS, CARD_STYLE, formatCurrency,
+    COLORS, FONTS, FONT_SIZES, FONT_WEIGHTS, RADIUS, SPACING, TRANSITIONS, CARD_STYLE, formatCurrency,
 } from "@/lib/theme";
-
-export interface BarDataItem {
-    name: string;
-    value: number;
-    color: string;
-}
-
-interface FinancialSummaryChartProps {
-    data: BarDataItem[];
-    totalIncome: number;
-}
+import { FinancialSummaryChartProps } from "./types/FinancialSummaryChartProps";
 
 export default function FinancialSummaryChart({ data, totalIncome }: FinancialSummaryChartProps) {
     const max = Math.max(...data.map((d) => Math.abs(d.value)));
@@ -25,22 +15,22 @@ export default function FinancialSummaryChart({ data, totalIncome }: FinancialSu
                 fontWeight:   FONT_WEIGHTS.bold,
                 fontSize:     FONT_SIZES.base,
                 color:        COLORS.text,
-                marginBottom: 20,
+                marginBottom: SPACING["5"],
             }}>
                 Resumen Financiero
             </div>
 
-            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: SPACING["3"] }}>
                 {data.map((item, i) => {
                     const isDeficit = item.value < 0;
                     const pct      = totalIncome > 0 ? (Math.abs(item.value) / totalIncome) * 100 : 0;
                     const barWidth = max > 0 ? (Math.abs(item.value) / max) * 100 : 0;
                     return (
-                        <div key={i} style={{ display: "flex", flexDirection: "column", gap: 5 }}>
+                        <div key={i} style={{ display: "flex", flexDirection: "column", gap: SPACING["1"] }}>
                             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                                <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
+                                <div style={{ display: "flex", alignItems: "center", gap: SPACING["2"] }}>
                                     <div style={{
-                                        width: 8, height: 8, borderRadius: "50%",
+                                        width: SPACING["2"], height: SPACING["2"], borderRadius: "50%",
                                         background: item.color, flexShrink: 0,
                                     }} />
                                     <span style={{
@@ -51,7 +41,7 @@ export default function FinancialSummaryChart({ data, totalIncome }: FinancialSu
                                         {item.name}
                                     </span>
                                 </div>
-                                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                                <div style={{ display: "flex", alignItems: "center", gap: SPACING["2.5"] }}>
                                     <span style={{
                                         color:      item.color,
                                         fontSize:   FONT_SIZES.sm,
@@ -74,15 +64,15 @@ export default function FinancialSummaryChart({ data, totalIncome }: FinancialSu
                                     </span>
                                 </div>
                             </div>
-                            <div style={{ height: 6, borderRadius: RADIUS.sm, background: COLORS.cardBorder, overflow: "hidden" }}>
+                            <div style={{ height: SPACING["1.5"], borderRadius: RADIUS.sm, background: COLORS.cardBorder, overflow: "hidden" }}>
                                 <div style={{
-                                    height:     "100%",
-                                    width:      `${barWidth}%`,
+                                    height:       "100%",
+                                    width:        `${barWidth}%`,
                                     borderRadius: RADIUS.sm,
-                                    background: isDeficit
+                                    background:   isDeficit
                                         ? `repeating-linear-gradient(45deg, ${item.color}99, ${item.color}99 4px, transparent 4px, transparent 8px)`
                                         : `linear-gradient(90deg, ${item.color}cc, ${item.color})`,
-                                    transition: "width 0.8s ease",
+                                    transition:   `width ${TRANSITIONS.slow}`,
                                 }} />
                             </div>
                         </div>

@@ -1,13 +1,5 @@
 import { COLORS } from "@/lib/theme";
-
-interface ProgressRingProps {
-    pct: number;
-    color: string;
-    size?: number;
-    stroke?: number;
-    secondaryPct?: number;
-    secondaryColor?: string;
-}
+import { ProgressRingProps } from "./types/ProgressRingProps";
 
 export default function ProgressRing({
     pct,

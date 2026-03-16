@@ -4,27 +4,9 @@ import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from "recharts";
 import {
     COLORS, FONTS, FONT_SIZES, FONT_WEIGHTS, RADIUS, SPACING, CARD_STYLE, formatCurrency,
 } from "@/lib/theme";
-
-export interface PieDataItem {
-    name: string;
-    value: number;
-    color: string;
-}
-
-interface DistributionChartProps {
-    data: PieDataItem[];
-    totalIncome: number;
-}
-
-interface CustomLabelProps {
-    cx?: number;
-    cy?: number;
-    midAngle?: number;
-    outerRadius?: number;
-    name?: string;
-    percent?: number;
-    fill?: string;
-}
+import { DistributionChartProps } from "./types/DistributionChartProps";
+import { CustomLabelProps } from "./types/CustomLabelProps";
+import { CustomTooltipProps } from "./types/CustomTooltipProps";
 
 const RADIAN = Math.PI / 180;
 
@@ -70,8 +52,7 @@ function CustomLabel({ cx = 0, cy = 0, midAngle = 0, outerRadius = 0, name = "",
     );
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function CustomTooltip({ active, payload }: any) {
+function CustomTooltip({ active, payload }: CustomTooltipProps) {
     if (!active || !payload?.length) return null;
     const entry = payload[0];
     const color: string = entry.payload?.color ?? COLORS.text;

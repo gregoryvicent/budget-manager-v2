@@ -3,15 +3,7 @@ import {
     COLORS, FONTS, FONT_SIZES, FONT_WEIGHTS, LINE_HEIGHTS, LETTER_SPACING,
     RADIUS, SPACING, CARD_STYLE,
 } from "@/lib/theme";
-
-interface MetricCardProps {
-    label: string;
-    value: React.ReactNode;
-    color: string;
-    icon: React.ElementType;
-    subtitle?: string;
-    trend?: "up" | "down";
-}
+import { MetricCardProps } from "./types/MetricCardProps";
 
 export default function MetricCard({ label, value, color, icon: Icon, subtitle, trend }: MetricCardProps) {
     return (
@@ -20,14 +12,14 @@ export default function MetricCard({ label, value, color, icon: Icon, subtitle, 
             flexDirection: "row",
             alignItems: "center",
             gap: SPACING["5"],
-            padding: `${SPACING["5"]}px 28px`,
+            padding: `${SPACING["5"]}px ${SPACING["7"]}px`,
         }}>
             {/* Icono */}
             <div style={{
                 background: color + "18",
                 border: `1px solid ${color}30`,
-                borderRadius: 14,
-                padding: 14,
+                borderRadius: RADIUS["2xl"],
+                padding: SPACING["3.5"],
                 flexShrink: 0,
             }}>
                 <Icon size={22} color={color} />
@@ -41,7 +33,7 @@ export default function MetricCard({ label, value, color, icon: Icon, subtitle, 
                     fontFamily:     FONTS.body,
                     letterSpacing:  LETTER_SPACING.wider,
                     textTransform:  "uppercase",
-                    marginBottom:   6,
+                    marginBottom:   SPACING["1.5"],
                 }}>
                     {label}
                 </div>
@@ -51,12 +43,12 @@ export default function MetricCard({ label, value, color, icon: Icon, subtitle, 
                     fontSize:     FONT_SIZES["4xl"],
                     fontFamily:   FONTS.heading,
                     lineHeight:   LINE_HEIGHTS.tight,
-                    marginBottom: 6,
+                    marginBottom: SPACING["1.5"],
                 }}>
                     {value}
                 </div>
                 {subtitle && (
-                    <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: SPACING["1"] }}>
                         {trend === "up"   && <ArrowUpRight   size={13} color={COLORS.income}   />}
                         {trend === "down" && <ArrowDownRight size={13} color={COLORS.variable} />}
                         <span style={{

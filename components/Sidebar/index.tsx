@@ -6,25 +6,14 @@ import {
     COLORS, FONTS, FONT_SIZES, FONT_WEIGHTS, LETTER_SPACING, RADIUS, SPACING,
     TRANSITIONS, Z_INDEX,
 } from "@/lib/theme";
-
-const MONTHS = [
-    "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
-    "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre",
-];
+import YearMonthGrid from "./YearMonthGrid";
+import { SidebarProps } from "./types/SidebarProps";
 
 const YEARS = [2025, 2026];
 
 const now          = new Date();
 const currentYear  = now.getFullYear();
 const currentMonth = now.getMonth();
-
-interface SidebarProps {
-    open: boolean;
-    onToggle: () => void;
-    selectedYear: number;
-    selectedMonth: number;
-    onMonthSelect: (year: number, month: number) => void;
-}
 
 export default function Sidebar({ open, onToggle, selectedYear, selectedMonth, onMonthSelect }: SidebarProps) {
     const [expandedYears, setExpandedYears] = useState<number[]>([currentYear]);
@@ -34,6 +23,11 @@ export default function Sidebar({ open, onToggle, selectedYear, selectedMonth, o
             prev.includes(year) ? prev.filter(y => y !== year) : [...prev, year]
         );
     }
+
+    const handleMonthSelect = (year: number, month: number) => {
+        onMonthSelect(year, month);
+        onToggle();
+    };
 
     return (
         <>
@@ -53,20 +47,20 @@ export default function Sidebar({ open, onToggle, selectedYear, selectedMonth, o
 
             {/* Panel */}
             <div style={{
-                position:    "fixed",
-                top:          0,
-                right:        0,
-                height:      "100vh",
-                width:        280,
-                background:   COLORS.card,
-                borderLeft:  `1px solid ${COLORS.cardBorder}`,
-                zIndex:       Z_INDEX.panel,
-                transform:    open ? "translateX(0)" : "translateX(100%)",
-                transition:  `transform ${TRANSITIONS.moderate} cubic-bezier(0.4, 0, 0.2, 1)`,
-                display:     "flex",
+                position:      "fixed",
+                top:            0,
+                right:          0,
+                height:        "100vh",
+                width:          280,
+                background:     COLORS.card,
+                borderLeft:    `1px solid ${COLORS.cardBorder}`,
+                zIndex:         Z_INDEX.panel,
+                transform:      open ? "translateX(0)" : "translateX(100%)",
+                transition:    `transform ${TRANSITIONS.moderate} cubic-bezier(0.4, 0, 0.2, 1)`,
+                display:       "flex",
                 flexDirection: "column",
-                padding:      SPACING["6"],
-                overflowY:   "auto",
+                padding:        SPACING["6"],
+                overflowY:     "auto",
             }}>
                 {/* Header */}
                 <div style={{
@@ -119,9 +113,9 @@ export default function Sidebar({ open, onToggle, selectedYear, selectedMonth, o
                                         background:     "none",
                                         border:         "none",
                                         cursor:         "pointer",
-                                        padding:        `${SPACING["2"]}px ${SPACING["2"] + 2}px`,
+                                        padding:        `${SPACING["2"]}px ${SPACING["2.5"]}px`,
                                         borderRadius:   RADIUS.lg,
-                                        marginBottom:   2,
+                                        marginBottom:   SPACING["1"],
                                         transition:     `background ${TRANSITIONS.fast}`,
                                     }}
                                     onMouseEnter={e => (e.currentTarget.style.background = COLORS.cardBorder + "80")}
@@ -143,48 +137,14 @@ export default function Sidebar({ open, onToggle, selectedYear, selectedMonth, o
                                 </button>
 
                                 {isExpanded && (
-                                    <div style={{
-                                        display:             "grid",
-                                        gridTemplateColumns: "1fr 1fr",
-                                        gap:                 6,
-                                        paddingLeft:         SPACING["2"],
-                                        paddingBottom:       SPACING["2"],
-                                    }}>
-                                        {MONTHS.map((month, idx) => {
-                                            const isFuture  = year === currentYear && idx > currentMonth;
-                                            const isSelected = selectedYear === year && selectedMonth === idx;
-                                            return (
-                                                <button
-                                                    key={idx}
-                                                    disabled={isFuture}
-                                                    onClick={() => { onMonthSelect(year, idx); onToggle(); }}
-                                                    style={{
-                                                        padding:      `7px ${SPACING["2"] + 2}px`,
-                                                        borderRadius: RADIUS.md,
-                                                        border:       isSelected ? `1px solid ${COLORS.accent}66` : "1px solid transparent",
-                                                        background:   isSelected ? COLORS.accent + "18" : "none",
-                                                        color:        isFuture ? COLORS.cardBorder : isSelected ? COLORS.accent : COLORS.text,
-                                                        fontSize:     FONT_SIZES.cap,
-                                                        fontFamily:   FONTS.body,
-                                                        fontWeight:   isSelected ? FONT_WEIGHTS.semibold : FONT_WEIGHTS.regular,
-                                                        cursor:       isFuture ? "default" : "pointer",
-                                                        textAlign:    "left",
-                                                        transition:   `background ${TRANSITIONS.fast}, color ${TRANSITIONS.fast}`,
-                                                    }}
-                                                    onMouseEnter={e => {
-                                                        if (!isFuture && !isSelected)
-                                                            e.currentTarget.style.background = COLORS.cardBorder + "60";
-                                                    }}
-                                                    onMouseLeave={e => {
-                                                        if (!isSelected)
-                                                            e.currentTarget.style.background = "none";
-                                                    }}
-                                                >
-                                                    {month}
-                                                </button>
-                                            );
-                                        })}
-                                    </div>
+                                    <YearMonthGrid
+                                        year={year}
+                                        currentYear={currentYear}
+                                        currentMonth={currentMonth}
+                                        selectedYear={selectedYear}
+                                        selectedMonth={selectedMonth}
+                                        onSelect={handleMonthSelect}
+                                    />
                                 )}
                             </div>
                         );
