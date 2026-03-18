@@ -1,0 +1,113 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../lib/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ─────────────────────────────────────────
+// ENUMS
+// ─────────────────────────────────────────
+
+enum ExpenseType {
+  FIXED
+  VARIABLE
+}
+
+enum GoalType {
+  SAVINGS
+  INVESTMENT
+}
+
+// ─────────────────────────────────────────
+// MODELS
+// ─────────────────────────────────────────
+
+model User {
+  id           String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  email        String         @unique
+  name         String
+  createdAt    DateTime       @default(now()) @map("created_at")
+  budgetMonths BudgetMonth[]
+  savingsGoals SavingsGoal[]
+
+  @@map("users")
+}
+
+/// Representa el presupuesto de un mes específico para un usuario.
+/// La combinación (userId, year, month) es única.
+model BudgetMonth {
+  id               String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId           String             @map("user_id") @db.Uuid
+  year             Int
+  month            Int
+  createdAt        DateTime           @default(now()) @map("created_at")
+  user             User               @relation(fields: [userId], references: [id])
+  incomeEntries    IncomeEntry[]
+  expenseEntries   ExpenseEntry[]
+  goalMonthSettings GoalMonthSetting[]
+
+  @@unique([userId, year, month], name: "uq_budget_month_per_user")
+  @@map("budget_months")
+}
+
+/// Fuentes de ingreso dentro de un mes (ej. "Salario EMQU", "Freelance").
+model IncomeEntry {
+  id            String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  budgetMonthId String      @map("budget_month_id") @db.Uuid
+  name          String
+  amount        Decimal     @db.Decimal(10, 2)
+  createdAt     DateTime    @default(now()) @map("created_at")
+  budgetMonth   BudgetMonth @relation(fields: [budgetMonthId], references: [id])
+
+  @@map("income_entries")
+}
+
+/// Gastos del mes diferenciados por tipo FIXED o VARIABLE.
+model ExpenseEntry {
+  id            String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  budgetMonthId String      @map("budget_month_id") @db.Uuid
+  name          String
+  amount        Decimal     @db.Decimal(10, 2)
+  type          ExpenseType
+  createdAt     DateTime    @default(now()) @map("created_at")
+  budgetMonth   BudgetMonth @relation(fields: [budgetMonthId], references: [id])
+
+  @@map("expense_entries")
+}
+
+/// Meta global de ahorro o inversión del usuario.
+/// El total ahorrado se obtiene sumando amount_contributed de todos
+/// los GoalMonthSetting asociados donde amount_contributed no sea null.
+model SavingsGoal {
+  id                String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId            String             @map("user_id") @db.Uuid
+  type              GoalType
+  title             String
+  goalAmount        Decimal            @map("goal_amount") @db.Decimal(10, 2)
+  createdAt         DateTime           @default(now()) @map("created_at")
+  user              User               @relation(fields: [userId], references: [id])
+  goalMonthSettings GoalMonthSetting[]
+
+  @@unique([userId, type], name: "uq_goal_type_per_user")
+  @@map("savings_goals")
+}
+
+/// Configuración y registro de aportación de una meta para un mes concreto.
+/// allocation_pct define el % del ingreso total destinado a la meta.
+/// amount_contributed es null mientras el mes está abierto; al cerrarse
+/// se fija con el valor real: total_income * (allocation_pct / 100).
+model GoalMonthSetting {
+  id                String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  savingsGoalId     String      @map("savings_goal_id") @db.Uuid
+  budgetMonthId     String      @map("budget_month_id") @db.Uuid
+  allocationPct     Decimal     @map("allocation_pct") @db.Decimal(5, 2)
+  amountContributed Decimal?    @map("amount_contributed") @db.Decimal(10, 2)
+  savingsGoal       SavingsGoal @relation(fields: [savingsGoalId], references: [id])
+  budgetMonth       BudgetMonth @relation(fields: [budgetMonthId], references: [id])
+
+  @@unique([savingsGoalId, budgetMonthId], name: "uq_goal_settings_per_month")
+  @@map("goal_month_settings")
+}

@@ -1,0 +1,93 @@
+// Budget Manager — Database Schema
+// Paste this at https://dbdiagram.io/d
+
+// ─────────────────────────────────────────
+// ENUMS
+// ─────────────────────────────────────────
+
+Enum expense_type {
+  FIXED      // Gastos fijos mensuales (renta, servicios, etc.)
+  VARIABLE   // Gastos variables del mes
+}
+
+Enum goal_type {
+  SAVINGS     // Fondo de ahorro / emergencia
+  INVESTMENT  // Fondo de inversión
+}
+
+// ─────────────────────────────────────────
+// TABLES
+// ─────────────────────────────────────────
+
+Table users {
+  id         uuid      [pk, default: `gen_random_uuid()`]
+  email      varchar   [unique, not null]
+  name       varchar   [not null]
+  created_at timestamp [default: `now()`]
+}
+
+// Representa el presupuesto de un mes específico para un usuario.
+// La combinación (user_id, year, month) es única.
+Table budget_months {
+  id         uuid      [pk, default: `gen_random_uuid()`]
+  user_id    uuid      [not null, ref: > users.id]
+  year       int       [not null]
+  month      int       [not null, note: '1–12']
+  created_at timestamp [default: `now()`]
+
+  indexes {
+    (user_id, year, month) [unique, name: 'uq_budget_month_per_user']
+  }
+}
+
+// Fuentes de ingreso dentro de un mes (ej. "Salario EMQU", "Freelance").
+Table income_entries {
+  id              uuid         [pk, default: `gen_random_uuid()`]
+  budget_month_id uuid         [not null, ref: > budget_months.id]
+  name            varchar      [not null]
+  amount          decimal(10,2)[not null]
+  created_at      timestamp    [default: `now()`]
+}
+
+// Gastos del mes, diferenciados por tipo FIXED o VARIABLE.
+Table expense_entries {
+  id              uuid         [pk, default: `gen_random_uuid()`]
+  budget_month_id uuid         [not null, ref: > budget_months.id]
+  name            varchar      [not null]
+  amount          decimal(10,2)[not null]
+  type            expense_type [not null]
+  created_at      timestamp    [default: `now()`]
+}
+
+// Metas globales del usuario (ahorro e inversión).
+// goal_amount es el objetivo final. El total ahorrado se computa
+// sumando amount_contributed de todos los goal_month_settings asociados.
+Table savings_goals {
+  id          uuid         [pk, default: `gen_random_uuid()`]
+  user_id     uuid         [not null, ref: > users.id]
+  type        goal_type    [not null]
+  title       varchar      [not null]
+  goal_amount decimal(10,2)[not null]
+  created_at  timestamp    [default: `now()`]
+
+  indexes {
+    (user_id, type) [unique, name: 'uq_goal_type_per_user']
+  }
+}
+
+// Configuración y registro de aportación de una meta para un mes concreto.
+// allocation_pct define el % del ingreso total a destinar.
+// amount_contributed es null hasta que el mes se cierra/confirma; al cerrarse
+// se calcula como: total_income_del_mes * (allocation_pct / 100).
+// El total ahorrado acumulado = SUM(amount_contributed) de todos los meses.
+Table goal_month_settings {
+  id                 uuid         [pk, default: `gen_random_uuid()`]
+  savings_goal_id    uuid         [not null, ref: > savings_goals.id]
+  budget_month_id    uuid         [not null, ref: > budget_months.id]
+  allocation_pct     decimal(5,2) [not null, default: 10, note: 'Porcentaje del ingreso total asignado a esta meta']
+  amount_contributed decimal(10,2)[null, note: 'Importe real aportado al cerrar el mes. NULL = mes aún abierto']
+
+  indexes {
+    (savings_goal_id, budget_month_id) [unique, name: 'uq_goal_settings_per_month']
+  }
+}
