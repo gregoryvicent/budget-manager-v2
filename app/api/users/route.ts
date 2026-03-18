@@ -1,6 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getUsers } from "@/backend/application/budgetManager/GetUsers";
 import { createUser } from "@/backend/application/budgetManager/CreateUser";
 import { PrismaUserRepository } from "@/backend/adapters/db/prisma/budgetManager/PrismaUserRepository";
+
+const repo = new PrismaUserRepository();
+
+export async function GET() {
+  try {
+    const users = await getUsers(repo);
+    return NextResponse.json(users);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Unknown error";
+    return NextResponse.json({ error: message }, { status: 500 });
+  }
+}
 
 export async function POST(req: NextRequest) {
   try {
@@ -14,7 +27,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const user = await createUser(new PrismaUserRepository(), { email, name });
+    const user = await createUser(repo, { email, name });
     return NextResponse.json(user, { status: 201 });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown error";
