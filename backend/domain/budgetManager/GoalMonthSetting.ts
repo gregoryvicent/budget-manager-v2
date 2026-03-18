@@ -5,4 +5,6 @@ export interface GoalMonthSetting {
   allocationPct: number;
   /** Importe real aportado al cerrar el mes. null = mes aún abierto. */
   amountContributed: number | null;
+  createdAt: Date;
+  updatedAt: Date;
 }

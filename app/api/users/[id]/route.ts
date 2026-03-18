@@ -40,8 +40,8 @@ export async function PATCH(req: NextRequest, { params }: Params) {
 export async function DELETE(_req: NextRequest, { params }: Params) {
   try {
     const { id } = await params;
-    await deleteUser(repo, id);
-    return new NextResponse(null, { status: 204 });
+    const user = await deleteUser(repo, id);
+    return NextResponse.json(user);
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown error";
     const status = message.includes("no encontrado") ? 404 : 500;

@@ -7,4 +7,5 @@ export interface SavingsGoal {
   title: string;
   goalAmount: number;
   createdAt: Date;
+  updatedAt: Date;
 }

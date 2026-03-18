@@ -4,4 +4,5 @@ export interface BudgetMonth {
   year: number;
   month: number;
   createdAt: Date;
+  updatedAt: Date;
 }

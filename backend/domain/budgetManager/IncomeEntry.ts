@@ -4,4 +4,5 @@ export interface IncomeEntry {
   name: string;
   amount: number;
   createdAt: Date;
+  updatedAt: Date;
 }

@@ -7,4 +7,5 @@ export interface ExpenseEntry {
   amount: number;
   type: ExpenseType;
   createdAt: Date;
+  updatedAt: Date;
 }
