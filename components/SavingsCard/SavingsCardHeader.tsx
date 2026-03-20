@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
     COLORS, FONTS, FONT_SIZES, FONT_WEIGHTS, RADIUS, SPACING,
 } from "@/lib/theme";
@@ -11,6 +11,10 @@ export default function SavingsCardHeader({
     allocationPct, onAllocationPctChange,
 }: SavingsCardHeaderProps) {
     const [inputValue, setInputValue] = useState(String(allocationPct));
+
+    useEffect(() => {
+        setInputValue(String(allocationPct));
+    }, [allocationPct]);
 
     function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
         const raw = e.target.value;

@@ -11,48 +11,56 @@ import FinancialSummaryChart from "@/components/FinancialSummaryChart";
 import DistributionChart from "@/components/DistributionChart";
 import Sidebar from "@/components/Sidebar";
 import DashboardHeader from "@/components/DashboardHeader";
+import UserSetup from "@/components/UserSetup";
 import { useBudgetCalculations } from "@/hooks/useBudgetCalculations";
+import { useCurrentUser } from "@/hooks/useCurrentUser";
+import { useBudgetMonth } from "@/hooks/useBudgetMonth";
+import { useIncomeEntries } from "@/hooks/useIncomeEntries";
+import { useExpenseEntries } from "@/hooks/useExpenseEntries";
+import { useSavingsGoal } from "@/hooks/useSavingsGoal";
+import { useGoalMonthSetting } from "@/hooks/useGoalMonthSetting";
 import { COLORS, FONTS, SPACING } from "@/lib/theme";
-import { type ListItem } from "@/lib/types";
-
-const initialIncomes: ListItem[] = [
-    { id: 1, name: "Salario EMQU", amount: 850 },
-];
-
-const initialFixedExpenses: ListItem[] = [
-    { id: 1, name: "Renta departamento",      amount: 280.14 },
-    { id: 2, name: "Servicio de Internet",     amount: 17.5  },
-    { id: 3, name: "Renta del teléfono",       amount: 14    },
-    { id: 4, name: "Comida para la casa",      amount: 200   },
-    { id: 5, name: "Mantenimiento bancolombia", amount: 8    },
-    { id: 6, name: "Gas, Agua, Electricidad",  amount: 110   },
-    { id: 7, name: "Prime Video + Max",        amount: 7     },
-];
-
-const initialVariableExpenses: ListItem[] = [
-    { id: 1, name: "Deposito de la nueva casa", amount: 140 },
-];
-
-const EMERGENCY_GOAL   = 2000;
-const EMERGENCY_SAVED  = 560.3;
-const INVESTMENT_GOAL  = 5000;
-const INVESTMENT_SAVED = 0;
 
 export default function BudgetDashboard() {
-    const [incomes, setIncomes]                 = useState<ListItem[]>(initialIncomes);
-    const [fixedExpenses, setFixedExpenses]     = useState<ListItem[]>(initialFixedExpenses);
-    const [variableExpenses, setVariableExpenses] = useState<ListItem[]>(initialVariableExpenses);
-    const [savingsPct, setSavingsPct]           = useState(10);
-    const [investmentPct, setInvestmentPct]     = useState(10);
-    const [sidebarOpen, setSidebarOpen]         = useState(false);
-    const [selectedYear, setSelectedYear]       = useState(new Date().getFullYear());
-    const [selectedMonth, setSelectedMonth]     = useState(new Date().getMonth());
+    const [sidebarOpen, setSidebarOpen]   = useState(false);
+    const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+    const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
+
+    const { userId, loading: userLoading, createUser } = useCurrentUser();
+
+    const { budgetMonthId } = useBudgetMonth(
+        userId ?? "",
+        selectedYear,
+        selectedMonth,
+    );
+
+    const incomeHook   = useIncomeEntries(budgetMonthId);
+    const fixedHook    = useExpenseEntries(budgetMonthId, "FIXED");
+    const variableHook = useExpenseEntries(budgetMonthId, "VARIABLE");
+
+    const savingsGoalHook    = useSavingsGoal(userId ?? "", "SAVINGS");
+    const investmentGoalHook = useSavingsGoal(userId ?? "", "INVESTMENT");
+
+    const savingsSetting = useGoalMonthSetting(
+        savingsGoalHook.goal?.id ?? null,
+        budgetMonthId,
+    );
+    const investmentSetting = useGoalMonthSetting(
+        investmentGoalHook.goal?.id ?? null,
+        budgetMonthId,
+    );
 
     const {
         totalIncome, totalFixed, totalVariable, totalExpenses,
         savingsAllocation, investmentAllocation, afterExpenses,
         freePct, totalExpPct,
-    } = useBudgetCalculations(incomes, fixedExpenses, variableExpenses, savingsPct, investmentPct);
+    } = useBudgetCalculations(
+        incomeHook.incomes,
+        fixedHook.expenses,
+        variableHook.expenses,
+        savingsSetting.allocationPct,
+        investmentSetting.allocationPct,
+    );
 
     const pieData = [
         { name: "Gastos fijos",   value: totalFixed,           color: COLORS.fixed      },
@@ -60,8 +68,8 @@ export default function BudgetDashboard() {
         { name: "Ahorros",        value: savingsAllocation,    color: COLORS.savings    },
         { name: "Inversiones",    value: investmentAllocation, color: COLORS.investment },
         afterExpenses >= 0
-            ? { name: "Me queda libre", value: afterExpenses,              color: COLORS.accent  }
-            : { name: "Déficit",        value: Math.abs(afterExpenses),    color: COLORS.deficit },
+            ? { name: "Me queda libre", value: afterExpenses,           color: COLORS.accent  }
+            : { name: "Déficit",        value: Math.abs(afterExpenses), color: COLORS.deficit },
     ].filter(d => d.value > 0);
 
     const barData = [
@@ -76,6 +84,12 @@ export default function BudgetDashboard() {
             color: afterExpenses >= 0 ? COLORS.accent : COLORS.deficit,
         },
     ];
+
+    if (userLoading) return null;
+
+    if (!userId) {
+        return <UserSetup onCreate={createUser} />;
+    }
 
     return (
         <div style={{
@@ -134,48 +148,54 @@ export default function BudgetDashboard() {
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: SPACING["4"], marginBottom: SPACING["6"] }}>
                 <EditableList
                     title="Fuentes de Ingresos"
-                    items={incomes}
+                    items={incomeHook.incomes}
                     color={COLORS.income}
                     icon={TrendingUp}
-                    onItemsChange={setIncomes}
+                    onAdd={incomeHook.add}
+                    onUpdate={incomeHook.update}
+                    onDelete={incomeHook.remove}
                 />
                 <EditableList
                     title="Gastos Fijos del Mes"
-                    items={fixedExpenses}
+                    items={fixedHook.expenses}
                     color={COLORS.fixed}
                     icon={Target}
-                    onItemsChange={setFixedExpenses}
+                    onAdd={fixedHook.add}
+                    onUpdate={fixedHook.update}
+                    onDelete={fixedHook.remove}
                 />
                 <EditableList
                     title="Gastos Variables del Mes"
-                    items={variableExpenses}
+                    items={variableHook.expenses}
                     color={COLORS.variable}
                     icon={BarChart2}
-                    onItemsChange={setVariableExpenses}
+                    onAdd={variableHook.add}
+                    onUpdate={variableHook.update}
+                    onDelete={variableHook.remove}
                 />
             </div>
 
             {/* Ahorros + Gráficas */}
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: SPACING["4"], marginBottom: SPACING["6"] }}>
                 <SavingsCard
-                    title="Ahorros"
-                    saved={EMERGENCY_SAVED}
-                    goal={EMERGENCY_GOAL}
+                    title={savingsGoalHook.goal?.title ?? "Ahorros"}
+                    saved={savingsGoalHook.goal?.totalContributed ?? 0}
+                    goal={savingsGoalHook.goal?.goalAmount ?? 0}
                     color={COLORS.savings}
                     icon={Shield}
-                    allocationPct={savingsPct}
+                    allocationPct={savingsSetting.allocationPct}
                     monthlyAllocation={savingsAllocation}
-                    onAllocationPctChange={setSavingsPct}
+                    onAllocationPctChange={savingsSetting.upsert}
                 />
                 <SavingsCard
-                    title="Inversiones"
-                    saved={INVESTMENT_SAVED}
-                    goal={INVESTMENT_GOAL}
+                    title={investmentGoalHook.goal?.title ?? "Inversiones"}
+                    saved={investmentGoalHook.goal?.totalContributed ?? 0}
+                    goal={investmentGoalHook.goal?.goalAmount ?? 0}
                     color={COLORS.investment}
                     icon={TrendingUp}
-                    allocationPct={investmentPct}
+                    allocationPct={investmentSetting.allocationPct}
                     monthlyAllocation={investmentAllocation}
-                    onAllocationPctChange={setInvestmentPct}
+                    onAllocationPctChange={investmentSetting.upsert}
                 />
                 <FinancialSummaryChart data={barData} totalIncome={totalIncome} />
                 <DistributionChart data={pieData} totalIncome={totalIncome} />

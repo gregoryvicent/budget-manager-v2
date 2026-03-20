@@ -1,5 +1,5 @@
 export interface ListItem {
-    id:     number;
+    id:     string;
     name:   string;
     amount: number;
 }

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getUserById } from "@/backend/application/budgetManager/GetUserById";
-import { updateUser } from "@/backend/application/budgetManager/UpdateUser";
-import { deleteUser } from "@/backend/application/budgetManager/DeleteUser";
+import { getUserById } from "@/backend/application/users/GetUserById";
+import { updateUser } from "@/backend/application/users/UpdateUser";
+import { deleteUser } from "@/backend/application/users/DeleteUser";
 import { PrismaUserRepository } from "@/backend/adapters/db/prisma/budgetManager/PrismaUserRepository";
 
 const repo = new PrismaUserRepository();

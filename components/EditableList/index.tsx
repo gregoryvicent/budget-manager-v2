@@ -10,25 +10,25 @@ import EditableListItem from "./EditableListItem";
 import AddItemForm from "./AddItemForm";
 import { EditableListProps } from "./types/EditableListProps";
 
-export default function EditableList({ title, items, color, icon: Icon, onItemsChange }: EditableListProps) {
+export default function EditableList({ title, items, color, icon: Icon, onAdd, onUpdate, onDelete }: EditableListProps) {
     const [newName, setNewName]       = useState("");
     const [newAmount, setNewAmount]   = useState("");
     const [adding, setAdding]         = useState(false);
-    const [editingId, setEditingId]   = useState<number | null>(null);
+    const [editingId, setEditingId]   = useState<string | null>(null);
     const [editName, setEditName]     = useState("");
     const [editAmount, setEditAmount] = useState("");
 
     const total = items.reduce((s, i) => s + i.amount, 0);
 
-    const addItem = () => {
+    const addItem = async () => {
         if (!newName || !newAmount) return;
-        onItemsChange([...items, { id: Date.now(), name: newName, amount: parseFloat(newAmount) }]);
+        await onAdd(newName, parseFloat(newAmount));
         setNewName("");
         setNewAmount("");
         setAdding(false);
     };
 
-    const removeItem = (id: number) => onItemsChange(items.filter(i => i.id !== id));
+    const removeItem = (id: string) => onDelete(id);
 
     const startEdit = (item: ListItem) => {
         setEditingId(item.id);
@@ -36,10 +36,10 @@ export default function EditableList({ title, items, color, icon: Icon, onItemsC
         setEditAmount(String(item.amount));
     };
 
-    const confirmEdit = () => {
+    const confirmEdit = async () => {
         const parsed = parseFloat(editAmount);
         if (!editName.trim() || isNaN(parsed) || parsed < 0) { cancelEdit(); return; }
-        onItemsChange(items.map(i => i.id === editingId ? { ...i, name: editName.trim(), amount: parsed } : i));
+        await onUpdate(editingId!, editName.trim(), parsed);
         setEditingId(null);
     };
 
