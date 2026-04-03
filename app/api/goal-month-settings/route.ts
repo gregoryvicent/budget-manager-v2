@@ -62,10 +62,11 @@ export async function POST(req: NextRequest) {
   try {
     const { userId } = await requireAuth();
     const body = await req.json();
-    const { savingsGoalId, budgetMonthId, allocationPct } = body as {
+    const { savingsGoalId, budgetMonthId, allocationPct, amountContributed } = body as {
       savingsGoalId?: string;
       budgetMonthId?: string;
       allocationPct?: number;
+      amountContributed?: number | null;
     };
 
     if (!savingsGoalId || !budgetMonthId || allocationPct === undefined) {
@@ -93,7 +94,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const setting = await upsertGoalMonthSetting(repo, savingsGoalId, budgetMonthId, allocationPct);
+    const setting = await upsertGoalMonthSetting(repo, goalRepo, savingsGoalId, budgetMonthId, allocationPct, amountContributed);
     return NextResponse.json(setting);
   } catch (error: unknown) {
     if (typeof error === "object" && error !== null && "status" in error) {

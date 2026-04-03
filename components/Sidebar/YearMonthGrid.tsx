@@ -9,7 +9,7 @@ const MONTHS = [
 ];
 
 export default function YearMonthGrid({
-    year, currentYear, currentMonth,
+    year,
     selectedYear, selectedMonth, onSelect,
 }: YearMonthGridProps) {
     return (
@@ -21,28 +21,27 @@ export default function YearMonthGrid({
             paddingBottom:       SPACING["2"],
         }}>
             {MONTHS.map((month, idx) => {
-                const isFuture  = year === currentYear && idx > currentMonth;
-                const isSelected = selectedYear === year && selectedMonth === idx;
+                const month1 = idx + 1;
+                const isSelected = selectedYear === year && selectedMonth === month1;
                 return (
                     <button
                         key={idx}
-                        disabled={isFuture}
-                        onClick={() => onSelect(year, idx)}
+                        onClick={() => onSelect(year, month1)}
                         style={{
                             padding:      `${SPACING["2"]}px ${SPACING["2.5"]}px`,
                             borderRadius: RADIUS.md,
                             border:       isSelected ? `1px solid ${COLORS.accent}66` : "1px solid transparent",
                             background:   isSelected ? COLORS.accent + "18" : "none",
-                            color:        isFuture ? COLORS.cardBorder : isSelected ? COLORS.accent : COLORS.text,
+                            color:        isSelected ? COLORS.accent : COLORS.text,
                             fontSize:     FONT_SIZES.cap,
                             fontFamily:   FONTS.body,
                             fontWeight:   isSelected ? FONT_WEIGHTS.semibold : FONT_WEIGHTS.regular,
-                            cursor:       isFuture ? "default" : "pointer",
+                            cursor:       "pointer",
                             textAlign:    "left",
                             transition:   `background ${TRANSITIONS.fast}, color ${TRANSITIONS.fast}`,
                         }}
                         onMouseEnter={e => {
-                            if (!isFuture && !isSelected)
+                            if (!isSelected)
                                 e.currentTarget.style.background = COLORS.cardBorder + "60";
                         }}
                         onMouseLeave={e => {

@@ -13,7 +13,6 @@ const YEARS = [2025, 2026];
 
 const now          = new Date();
 const currentYear  = now.getFullYear();
-const currentMonth = now.getMonth();
 
 export default function Sidebar({ open, onToggle, selectedYear, selectedMonth, onMonthSelect }: SidebarProps) {
     const [expandedYears, setExpandedYears] = useState<number[]>([currentYear]);
@@ -139,8 +138,6 @@ export default function Sidebar({ open, onToggle, selectedYear, selectedMonth, o
                                 {isExpanded && (
                                     <YearMonthGrid
                                         year={year}
-                                        currentYear={currentYear}
-                                        currentMonth={currentMonth}
                                         selectedYear={selectedYear}
                                         selectedMonth={selectedMonth}
                                         onSelect={handleMonthSelect}

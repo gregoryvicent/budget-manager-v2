@@ -8,7 +8,10 @@ import {
 } from "@/lib/theme";
 import { DashboardHeaderProps } from "./types/DashboardHeaderProps";
 
-export default function DashboardHeader({ afterExpenses, onToggleSidebar }: DashboardHeaderProps) {
+export default function DashboardHeader({ afterExpenses, onToggleSidebar, selectedYear, selectedMonth, userName }: DashboardHeaderProps) {
+    const monthLabel = new Date(selectedYear, selectedMonth - 1)
+        .toLocaleDateString("es-CO", { month: "long", year: "numeric" });
+
     return (
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: SPACING["8"] }}>
             <div>
@@ -30,11 +33,18 @@ export default function DashboardHeader({ afterExpenses, onToggleSidebar }: Dash
                         WebkitBackgroundClip: "text",
                         WebkitTextFillColor:  "transparent",
                     }}>
-                        Budget Dashboard
+                        Hola, {userName}
                     </h1>
                 </div>
-                <p style={{ margin: "4px 0 0 50px", color: COLORS.muted, fontSize: FONT_SIZES.body, fontFamily: FONTS.body }}>
-                    Control financiero personal · {new Date().toLocaleDateString("es-CO", { month: "long", year: "numeric" })}
+                <p style={{
+                    margin: "6px 0 0 50px",
+                    fontSize:   FONT_SIZES.lg,
+                    fontFamily: FONTS.heading,
+                    fontWeight: FONT_WEIGHTS.semibold,
+                    color:      COLORS.accent,
+                    letterSpacing: "0.02em",
+                }}>
+                    Presupuesto de {monthLabel}
                 </p>
             </div>
 

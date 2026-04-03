@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSavingsGoals } from "@/backend/application/budgetManager/GetSavingsGoals";
-import { getOrCreateSavingsGoal } from "@/backend/application/budgetManager/GetOrCreateSavingsGoal";
+import { createSavingsGoal } from "@/backend/application/budgetManager/GetOrCreateSavingsGoal";
 import { PrismaSavingsGoalRepository } from "@/backend/adapters/db/prisma/budgetManager/PrismaSavingsGoalRepository";
 import { requireAuth } from "@/lib/apiAuth";
 import type { GoalType } from "@/backend/domain/budgetManager/SavingsGoal";
@@ -9,11 +9,17 @@ const repo = new PrismaSavingsGoalRepository();
 
 /**
  * Returns all savings goals for the authenticated user.
+ * Optionally filtered by ?type=SAVINGS|INVESTMENT.
  */
-export async function GET(_req: NextRequest) {
+export async function GET(req: NextRequest) {
   try {
     const { userId } = await requireAuth();
-    const goals = await getSavingsGoals(repo, userId);
+    const type = new URL(req.url).searchParams.get("type") as GoalType | null;
+
+    const goals = type
+      ? await repo.findByUserAndType(userId, type)
+      : await getSavingsGoals(repo, userId);
+
     return NextResponse.json(goals);
   } catch (error: unknown) {
     if (typeof error === "object" && error !== null && "status" in error) {
@@ -26,17 +32,21 @@ export async function GET(_req: NextRequest) {
 }
 
 /**
- * Gets or creates a savings goal for the authenticated user.
+ * Creates a new savings goal for the authenticated user.
  */
 export async function POST(req: NextRequest) {
   try {
     const { userId } = await requireAuth();
     const body = await req.json();
-    const { type } = body as { type?: GoalType };
+    const { type, title, goalAmount } = body as {
+      type?: GoalType;
+      title?: string;
+      goalAmount?: number;
+    };
 
-    if (!type) {
+    if (!type || !title || goalAmount === undefined) {
       return NextResponse.json(
-        { error: "El campo type es requerido." },
+        { error: "Los campos type, title y goalAmount son requeridos." },
         { status: 400 },
       );
     }
@@ -48,8 +58,8 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const goal = await getOrCreateSavingsGoal(repo, userId, type);
-    return NextResponse.json(goal);
+    const goal = await createSavingsGoal(repo, userId, type, title, goalAmount);
+    return NextResponse.json(goal, { status: 201 });
   } catch (error: unknown) {
     if (typeof error === "object" && error !== null && "status" in error) {
       const e = error as { status: number; message: string };

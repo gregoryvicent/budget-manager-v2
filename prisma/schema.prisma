@@ -90,20 +90,21 @@ model ExpenseEntry {
 }
 
 /// Meta global de ahorro o inversión del usuario.
-/// El total ahorrado se obtiene sumando amount_contributed de todos
-/// los GoalMonthSetting asociados donde amount_contributed no sea null.
+/// Un usuario puede tener múltiples metas de cada tipo.
+/// totalContributed es un cache desnormalizado que se actualiza
+/// cada vez que se modifica un GoalMonthSetting asociado.
 model SavingsGoal {
   id                String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   userId            String             @map("user_id") @db.Uuid
   type              GoalType
   title             String
   goalAmount        Decimal            @map("goal_amount") @db.Decimal(10, 2)
+  totalContributed  Decimal            @default(0) @map("total_contributed") @db.Decimal(10, 2)
   createdAt         DateTime           @default(now()) @map("created_at")
   updatedAt         DateTime           @updatedAt @map("updated_at")
   user              User               @relation(fields: [userId], references: [id], onDelete: Cascade)
   goalMonthSettings GoalMonthSetting[]
 
-  @@unique([userId, type], name: "uq_goal_type_per_user")
   @@map("savings_goals")
 }
 

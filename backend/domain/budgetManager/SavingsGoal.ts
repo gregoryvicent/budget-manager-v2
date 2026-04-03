@@ -6,6 +6,7 @@ export interface SavingsGoal {
   type: GoalType;
   title: string;
   goalAmount: number;
+  totalContributed: number;
   createdAt: Date;
   updatedAt: Date;
 }

@@ -7,4 +7,5 @@ export interface SavingsCardProps {
     allocationPct: number;
     monthlyAllocation: number;
     onAllocationPctChange: (pct: number) => void;
+    actions?: React.ReactNode;
 }

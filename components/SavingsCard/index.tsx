@@ -13,12 +13,12 @@ import { SavingsCardProps } from "./types/SavingsCardProps";
 
 export default function SavingsCard({
     title, saved, goal, color, icon,
-    allocationPct, monthlyAllocation, onAllocationPctChange,
+    allocationPct, monthlyAllocation, onAllocationPctChange, actions,
 }: SavingsCardProps) {
     const existingPct = goal > 0 ? Math.min((saved / goal) * 100, 100) : 0;
     const monthlyPct  = goal > 0 ? Math.min((monthlyAllocation / goal) * 100, 100 - existingPct) : 0;
-    const remaining   = Math.max(goal - saved - monthlyAllocation, 0);
-    const goalReached = goal > 0 && saved + monthlyAllocation >= goal;
+    const remaining   = Math.max(goal - saved, 0);
+    const goalReached = goal > 0 && saved >= goal;
 
     return (
         <>
@@ -122,6 +122,16 @@ export default function SavingsCard({
                 />
 
                 <GoalBanner visible={goalReached} />
+
+                {actions && (
+                    <div style={{
+                        display: "flex", justifyContent: "flex-end",
+                        gap: 8, borderTop: `1px solid ${COLORS.cardBorder}`,
+                        paddingTop: 12, marginTop: 4,
+                    }}>
+                        {actions}
+                    </div>
+                )}
             </div>
         </>
     );
