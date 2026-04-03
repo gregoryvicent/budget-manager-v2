@@ -1,6 +1,7 @@
 import { GoalMonthSetting } from "@/backend/domain/budgetManager/GoalMonthSetting";
 
 export interface IGoalMonthSettingRepository {
+  findById(id: string): Promise<GoalMonthSetting | null>;
   findByGoalAndMonth(savingsGoalId: string, budgetMonthId: string): Promise<GoalMonthSetting | null>;
   findByBudgetMonth(budgetMonthId: string): Promise<GoalMonthSetting[]>;
   findByGoal(savingsGoalId: string): Promise<GoalMonthSetting[]>;

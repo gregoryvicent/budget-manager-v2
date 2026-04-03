@@ -2,12 +2,19 @@ import { NextRequest, NextResponse } from "next/server";
 import { getExpenseEntries } from "@/backend/application/budgetManager/GetExpenseEntries";
 import { createExpenseEntry } from "@/backend/application/budgetManager/CreateExpenseEntry";
 import { PrismaExpenseEntryRepository } from "@/backend/adapters/db/prisma/budgetManager/PrismaExpenseEntryRepository";
-import { ExpenseType } from "@/backend/domain/budgetManager/ExpenseEntry";
+import { PrismaBudgetMonthRepository } from "@/backend/adapters/db/prisma/budgetManager/PrismaBudgetMonthRepository";
+import { requireAuth } from "@/lib/apiAuth";
+import type { ExpenseType } from "@/backend/domain/budgetManager/ExpenseEntry";
 
 const repo = new PrismaExpenseEntryRepository();
+const budgetRepo = new PrismaBudgetMonthRepository();
 
+/**
+ * Returns expense entries for a budget month, verifying ownership.
+ */
 export async function GET(req: NextRequest) {
   try {
+    const { userId } = await requireAuth();
     const { searchParams } = new URL(req.url);
     const budgetMonthId = searchParams.get("budgetMonthId");
     const type = searchParams.get("type") as ExpenseType | null;
@@ -19,16 +26,32 @@ export async function GET(req: NextRequest) {
       );
     }
 
+    const budget = await budgetRepo.findById(budgetMonthId);
+    if (!budget || budget.userId !== userId) {
+      return NextResponse.json(
+        { error: "No tiene permiso para acceder a este recurso." },
+        { status: 403 },
+      );
+    }
+
     const entries = await getExpenseEntries(repo, budgetMonthId, type ?? undefined);
     return NextResponse.json(entries);
-  } catch (error) {
+  } catch (error: unknown) {
+    if (typeof error === "object" && error !== null && "status" in error) {
+      const e = error as { status: number; message: string };
+      return NextResponse.json({ error: e.message }, { status: e.status });
+    }
     const message = error instanceof Error ? error.message : "Unknown error";
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }
 
+/**
+ * Creates an expense entry, verifying ownership of the budget month.
+ */
 export async function POST(req: NextRequest) {
   try {
+    const { userId } = await requireAuth();
     const body = await req.json();
     const { budgetMonthId, name, amount, type } = body as {
       budgetMonthId?: string;
@@ -51,9 +74,21 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    const budget = await budgetRepo.findById(budgetMonthId);
+    if (!budget || budget.userId !== userId) {
+      return NextResponse.json(
+        { error: "No tiene permiso para acceder a este recurso." },
+        { status: 403 },
+      );
+    }
+
     const entry = await createExpenseEntry(repo, { budgetMonthId, name, amount, type });
     return NextResponse.json(entry, { status: 201 });
-  } catch (error) {
+  } catch (error: unknown) {
+    if (typeof error === "object" && error !== null && "status" in error) {
+      const e = error as { status: number; message: string };
+      return NextResponse.json({ error: e.message }, { status: e.status });
+    }
     const message = error instanceof Error ? error.message : "Unknown error";
     return NextResponse.json({ error: message }, { status: 500 });
   }

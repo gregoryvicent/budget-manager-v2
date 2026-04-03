@@ -29,10 +29,17 @@ model User {
   id           String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   email        String         @unique
   name         String
+  passwordHash String?        @map("password_hash")
   createdAt    DateTime       @default(now()) @map("created_at")
   updatedAt    DateTime       @updatedAt @map("updated_at")
+
+  // Existing relations — with cascade
   budgetMonths BudgetMonth[]
   savingsGoals SavingsGoal[]
+
+  // NextAuth relations
+  accounts     Account[]
+  sessions     Session[]
 
   @@map("users")
 }
@@ -46,7 +53,7 @@ model BudgetMonth {
   month            Int
   createdAt        DateTime           @default(now()) @map("created_at")
   updatedAt        DateTime           @updatedAt @map("updated_at")
-  user             User               @relation(fields: [userId], references: [id])
+  user             User               @relation(fields: [userId], references: [id], onDelete: Cascade)
   incomeEntries    IncomeEntry[]
   expenseEntries   ExpenseEntry[]
   goalMonthSettings GoalMonthSetting[]
@@ -63,7 +70,7 @@ model IncomeEntry {
   amount        Decimal     @db.Decimal(10, 2)
   createdAt     DateTime    @default(now()) @map("created_at")
   updatedAt     DateTime    @updatedAt @map("updated_at")
-  budgetMonth   BudgetMonth @relation(fields: [budgetMonthId], references: [id])
+  budgetMonth   BudgetMonth @relation(fields: [budgetMonthId], references: [id], onDelete: Cascade)
 
   @@map("income_entries")
 }
@@ -77,7 +84,7 @@ model ExpenseEntry {
   type          ExpenseType
   createdAt     DateTime    @default(now()) @map("created_at")
   updatedAt     DateTime    @updatedAt @map("updated_at")
-  budgetMonth   BudgetMonth @relation(fields: [budgetMonthId], references: [id])
+  budgetMonth   BudgetMonth @relation(fields: [budgetMonthId], references: [id], onDelete: Cascade)
 
   @@map("expense_entries")
 }
@@ -93,7 +100,7 @@ model SavingsGoal {
   goalAmount        Decimal            @map("goal_amount") @db.Decimal(10, 2)
   createdAt         DateTime           @default(now()) @map("created_at")
   updatedAt         DateTime           @updatedAt @map("updated_at")
-  user              User               @relation(fields: [userId], references: [id])
+  user              User               @relation(fields: [userId], references: [id], onDelete: Cascade)
   goalMonthSettings GoalMonthSetting[]
 
   @@unique([userId, type], name: "uq_goal_type_per_user")
@@ -112,9 +119,54 @@ model GoalMonthSetting {
   amountContributed Decimal?    @map("amount_contributed") @db.Decimal(10, 2)
   createdAt         DateTime    @default(now()) @map("created_at")
   updatedAt         DateTime    @updatedAt @map("updated_at")
-  savingsGoal       SavingsGoal @relation(fields: [savingsGoalId], references: [id])
-  budgetMonth       BudgetMonth @relation(fields: [budgetMonthId], references: [id])
+  savingsGoal       SavingsGoal @relation(fields: [savingsGoalId], references: [id], onDelete: Cascade)
+  budgetMonth       BudgetMonth @relation(fields: [budgetMonthId], references: [id], onDelete: Cascade)
 
   @@unique([savingsGoalId, budgetMonthId], name: "uq_goal_settings_per_month")
   @@map("goal_month_settings")
+}
+
+
+// ─────────────────────────────────────────
+// NEXTAUTH MODELS
+// ─────────────────────────────────────────
+
+model Account {
+  id                String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId            String  @map("user_id") @db.Uuid
+  type              String
+  provider          String
+  providerAccountId String  @map("provider_account_id")
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  sessionToken String   @unique @map("session_token")
+  userId       String   @map("user_id") @db.Uuid
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verification_tokens")
 }

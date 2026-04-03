@@ -1,6 +1,7 @@
 "use client";
 
-import { TrendingUp, TrendingDown, Wallet, CalendarDays } from "lucide-react";
+import { signOut } from "next-auth/react";
+import { TrendingUp, TrendingDown, Wallet, CalendarDays, LogOut } from "lucide-react";
 import {
     COLORS, FONTS, FONT_SIZES, FONT_WEIGHTS,
     RADIUS, SPACING, TRANSITIONS,
@@ -75,6 +76,25 @@ export default function DashboardHeader({ afterExpenses, onToggleSidebar }: Dash
                     onMouseLeave={e => (e.currentTarget.style.background = COLORS.card)}
                 >
                     <CalendarDays size={18} color={COLORS.muted} />
+                </button>
+                <button
+                    onClick={() => signOut({ callbackUrl: "/auth/login" })}
+                    aria-label="Log out"
+                    style={{
+                        width:        40,
+                        height:       40,
+                        borderRadius: RADIUS.xl,
+                        background:   COLORS.card,
+                        border:       `1px solid ${COLORS.cardBorder}`,
+                        display:      "flex", alignItems: "center", justifyContent: "center",
+                        cursor:       "pointer",
+                        transition:   `background ${TRANSITIONS.base}`,
+                        flexShrink:   0,
+                    }}
+                    onMouseEnter={e => (e.currentTarget.style.background = COLORS.cardBorder)}
+                    onMouseLeave={e => (e.currentTarget.style.background = COLORS.card)}
+                >
+                    <LogOut size={18} color={COLORS.muted} />
                 </button>
             </div>
         </div>

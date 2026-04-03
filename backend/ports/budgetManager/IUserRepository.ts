@@ -4,7 +4,9 @@ export interface IUserRepository {
   findAll(): Promise<User[]>;
   findById(id: string): Promise<User | null>;
   findByEmail(email: string): Promise<User | null>;
+  findByEmailWithPassword(email: string): Promise<(User & { passwordHash: string | null }) | null>;
   create(data: Pick<User, "email" | "name">): Promise<User>;
+  createWithPassword(data: { email: string; name: string; passwordHash: string }): Promise<User>;
   update(id: string, data: Partial<Pick<User, "email" | "name">>): Promise<User>;
   delete(id: string): Promise<User>;
 }

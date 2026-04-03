@@ -19,17 +19,17 @@ interface SavingsGoalState {
 }
 
 /**
- * Obtiene o crea la meta de ahorro/inversión de un usuario y calcula el total acumulado
- * sumando los aportes confirmados de todos los meses.
+ * Gets or creates a savings/investment goal for the authenticated user
+ * and computes the total contributed across all months.
+ * The userId is extracted from the session on the server side.
  *
- * @param {string} userId - ID del usuario activo.
- * @param {GoalType} type - Tipo de meta: SAVINGS o INVESTMENT.
- * @returns {SavingsGoalState} Datos de la meta y handler de actualización.
+ * @param {GoalType} type - Goal type: SAVINGS or INVESTMENT.
+ * @returns {SavingsGoalState} Goal data and update handler.
  */
-export const useSavingsGoal = (userId: string, type: GoalType): SavingsGoalState => {
-    const [goal, setGoal]     = useState<SavingsGoalData | null>(null);
+export const useSavingsGoal = (type: GoalType): SavingsGoalState => {
+    const [goal, setGoal]       = useState<SavingsGoalData | null>(null);
     const [loading, setLoading] = useState(true);
-    const [error, setError]   = useState<string | null>(null);
+    const [error, setError]     = useState<string | null>(null);
 
     const load = useCallback(async () => {
         setLoading(true);
@@ -39,7 +39,7 @@ export const useSavingsGoal = (userId: string, type: GoalType): SavingsGoalState
             const goalRes = await fetch("/api/savings-goals", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ userId, type }),
+                body: JSON.stringify({ type }),
             });
             const goalData = await goalRes.json();
             if (!goalRes.ok) throw new Error(goalData.error);
@@ -59,7 +59,7 @@ export const useSavingsGoal = (userId: string, type: GoalType): SavingsGoalState
         } finally {
             setLoading(false);
         }
-    }, [userId, type]);
+    }, [type]);
 
     useEffect(() => { load(); }, [load]);
 

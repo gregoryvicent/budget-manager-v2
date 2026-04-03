@@ -2,38 +2,41 @@ import { NextRequest, NextResponse } from "next/server";
 import { getSavingsGoals } from "@/backend/application/budgetManager/GetSavingsGoals";
 import { getOrCreateSavingsGoal } from "@/backend/application/budgetManager/GetOrCreateSavingsGoal";
 import { PrismaSavingsGoalRepository } from "@/backend/adapters/db/prisma/budgetManager/PrismaSavingsGoalRepository";
-import { GoalType } from "@/backend/domain/budgetManager/SavingsGoal";
+import { requireAuth } from "@/lib/apiAuth";
+import type { GoalType } from "@/backend/domain/budgetManager/SavingsGoal";
 
 const repo = new PrismaSavingsGoalRepository();
 
-export async function GET(req: NextRequest) {
+/**
+ * Returns all savings goals for the authenticated user.
+ */
+export async function GET(_req: NextRequest) {
   try {
-    const { searchParams } = new URL(req.url);
-    const userId = searchParams.get("userId");
-
-    if (!userId) {
-      return NextResponse.json(
-        { error: "El parámetro userId es requerido." },
-        { status: 400 },
-      );
-    }
-
+    const { userId } = await requireAuth();
     const goals = await getSavingsGoals(repo, userId);
     return NextResponse.json(goals);
-  } catch (error) {
+  } catch (error: unknown) {
+    if (typeof error === "object" && error !== null && "status" in error) {
+      const e = error as { status: number; message: string };
+      return NextResponse.json({ error: e.message }, { status: e.status });
+    }
     const message = error instanceof Error ? error.message : "Unknown error";
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }
 
+/**
+ * Gets or creates a savings goal for the authenticated user.
+ */
 export async function POST(req: NextRequest) {
   try {
+    const { userId } = await requireAuth();
     const body = await req.json();
-    const { userId, type } = body as { userId?: string; type?: GoalType };
+    const { type } = body as { type?: GoalType };
 
-    if (!userId || !type) {
+    if (!type) {
       return NextResponse.json(
-        { error: "Los campos userId y type son requeridos." },
+        { error: "El campo type es requerido." },
         { status: 400 },
       );
     }
@@ -47,7 +50,11 @@ export async function POST(req: NextRequest) {
 
     const goal = await getOrCreateSavingsGoal(repo, userId, type);
     return NextResponse.json(goal);
-  } catch (error) {
+  } catch (error: unknown) {
+    if (typeof error === "object" && error !== null && "status" in error) {
+      const e = error as { status: number; message: string };
+      return NextResponse.json({ error: e.message }, { status: e.status });
+    }
     const message = error instanceof Error ? error.message : "Unknown error";
     return NextResponse.json({ error: message }, { status: 500 });
   }

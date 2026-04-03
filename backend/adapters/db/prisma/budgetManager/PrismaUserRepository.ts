@@ -15,7 +15,27 @@ export class PrismaUserRepository implements IUserRepository {
     return prisma.user.findUnique({ where: { email } });
   }
 
+  /**
+   * Finds a user by email including the passwordHash field.
+   *
+   * @param {string} email - The email address to search for
+   * @returns {Promise<(User & { passwordHash: string | null }) | null>} User with passwordHash or null
+   */
+  async findByEmailWithPassword(email: string): Promise<(User & { passwordHash: string | null }) | null> {
+    return prisma.user.findUnique({ where: { email } });
+  }
+
   async create(data: Pick<User, "email" | "name">): Promise<User> {
+    return prisma.user.create({ data });
+  }
+
+  /**
+   * Creates a new user with a hashed password.
+   *
+   * @param {object} data - The user data including email, name, and passwordHash
+   * @returns {Promise<User>} The created user
+   */
+  async createWithPassword(data: { email: string; name: string; passwordHash: string }): Promise<User> {
     return prisma.user.create({ data });
   }
 

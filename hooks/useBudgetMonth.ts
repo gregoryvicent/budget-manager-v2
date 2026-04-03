@@ -9,15 +9,15 @@ interface BudgetMonthState {
 }
 
 /**
- * Obtiene o crea el presupuesto mensual para un usuario dado.
- * Se re-ejecuta automáticamente al cambiar año o mes.
+ * Gets or creates the budget month for the authenticated user.
+ * The userId is extracted from the session on the server side.
+ * Re-fetches automatically when year or month changes.
  *
- * @param {string} userId - ID del usuario activo.
- * @param {number} year - Año del presupuesto.
- * @param {number} month - Mes del presupuesto (1-12).
- * @returns {BudgetMonthState} ID del presupuesto y estado de carga.
+ * @param {number} year - Budget year.
+ * @param {number} month - Budget month (1-12).
+ * @returns {BudgetMonthState} Budget month ID and loading state.
  */
-export const useBudgetMonth = (userId: string, year: number, month: number): BudgetMonthState => {
+export const useBudgetMonth = (year: number, month: number): BudgetMonthState => {
     const [budgetMonthId, setBudgetMonthId] = useState<string | null>(null);
     const [loading, setLoading]             = useState(true);
     const [error, setError]                 = useState<string | null>(null);
@@ -30,7 +30,7 @@ export const useBudgetMonth = (userId: string, year: number, month: number): Bud
             const res = await fetch("/api/budgets/get-or-create", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ userId, year, month }),
+                body: JSON.stringify({ year, month }),
             });
             const data = await res.json();
             if (!res.ok) throw new Error(data.error ?? "Error al cargar presupuesto.");
@@ -40,7 +40,7 @@ export const useBudgetMonth = (userId: string, year: number, month: number): Bud
         } finally {
             setLoading(false);
         }
-    }, [userId, year, month]);
+    }, [year, month]);
 
     useEffect(() => { load(); }, [load]);
 

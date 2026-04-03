@@ -14,6 +14,11 @@ const toGoalMonthSetting = (row: {
 });
 
 export class PrismaGoalMonthSettingRepository implements IGoalMonthSettingRepository {
+  async findById(id: string): Promise<GoalMonthSetting | null> {
+    const row = await prisma.goalMonthSetting.findUnique({ where: { id } });
+    return row ? toGoalMonthSetting(row) : null;
+  }
+
   async findByGoalAndMonth(savingsGoalId: string, budgetMonthId: string): Promise<GoalMonthSetting | null> {
     const row = await prisma.goalMonthSetting.findUnique({
       where: { uq_goal_settings_per_month: { savingsGoalId, budgetMonthId } },
