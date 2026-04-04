@@ -1,25 +1,70 @@
 "use client";
 
-import { useEffect, useState, type FormEvent } from "react";
+import { useEffect, useState } from "react";
 import { signIn, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+
+/**
+ * Zod schema for registration form validation.
+ * - name: required
+ * - email: valid email format
+ * - password: min 8 chars, 1 uppercase, 1 number, 1 special character
+ * - confirmPassword: must match password
+ */
+const registerSchema = z
+  .object({
+    name: z
+      .string()
+      .min(1, "El nombre es obligatorio.")
+      .regex(/^[a-zA-ZÀ-ÿ\s]+$/, "El nombre solo puede contener letras y espacios."),
+    email: z
+      .string()
+      .min(1, "El correo es obligatorio.")
+      .email("Ingresa un correo electrónico válido."),
+    password: z
+      .string()
+      .min(8, "La contraseña debe tener al menos 8 caracteres.")
+      .regex(/[A-Z]/, "La contraseña debe contener al menos una letra mayúscula.")
+      .regex(/[0-9]/, "La contraseña debe contener al menos un número.")
+      .regex(
+        /[^A-Za-z0-9]/,
+        "La contraseña debe contener al menos un carácter especial."
+      ),
+    confirmPassword: z.string().min(1, "Confirma tu contraseña."),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Las contraseñas no coinciden.",
+    path: ["confirmPassword"],
+  });
+
+type RegisterFormData = z.infer<typeof registerSchema>;
 
 /**
  * Registration page component.
  * Allows new users to create an account with name, email, and password.
+ * Uses react-hook-form + zod for exhaustive validation.
  * Redirects to dashboard if already authenticated.
  */
 export default function RegisterPage() {
   const { status } = useSession();
   const router = useRouter();
 
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [showPassword, setShowPassword] = useState(false);
   const [generalError, setGeneralError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<RegisterFormData>({
+    resolver: zodResolver(registerSchema),
+    mode: "onTouched",
+  });
 
   useEffect(() => {
     if (status === "authenticated") {
@@ -27,49 +72,42 @@ export default function RegisterPage() {
     }
   }, [status, router]);
 
-  function validate(): boolean {
-    const errors: Record<string, string> = {};
-    if (!name.trim()) errors.name = "Name is required.";
-    if (!email.trim()) errors.email = "Email is required.";
-    if (password.length < 8) errors.password = "Password must be at least 8 characters.";
-    setFieldErrors(errors);
-    return Object.keys(errors).length === 0;
-  }
-
-  async function handleSubmit(e: FormEvent) {
-    e.preventDefault();
+  async function onSubmit(data: RegisterFormData) {
     setGeneralError(null);
-    if (!validate()) return;
-
     setSubmitting(true);
     try {
       const res = await fetch("/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, password }),
+        body: JSON.stringify({
+          name: data.name,
+          email: data.email,
+          password: data.password,
+        }),
       });
 
       if (!res.ok) {
-        const data = await res.json();
-        setGeneralError(data.error ?? "Registration failed.");
+        const body = await res.json();
+        setGeneralError(body.error ?? "Error en el registro.");
         return;
       }
 
-      // Auto-login after successful registration
       const result = await signIn("credentials", {
-        email,
-        password,
+        email: data.email,
+        password: data.password,
         redirect: false,
       });
 
       if (result?.error) {
-        setGeneralError("Account created but auto-login failed. Please log in.");
+        setGeneralError(
+          "Cuenta creada, pero el inicio de sesión automático falló. Por favor inicia sesión."
+        );
         return;
       }
 
       router.push("/user/dashboard");
     } catch {
-      setGeneralError("Connection error. Please try again.");
+      setGeneralError("Error de conexión. Inténtalo de nuevo.");
     } finally {
       setSubmitting(false);
     }
@@ -77,74 +115,168 @@ export default function RegisterPage() {
 
   if (status === "loading") return null;
 
+  const inputClass =
+    "w-full rounded-lg border border-[#1f2937] bg-[#0f172a] px-3 py-2 text-sm text-[#f9fafb] placeholder-[#6b7280] outline-none focus:border-[#3b82f6] focus:ring-1 focus:ring-[#3b82f6]";
+  const errorClass = "mt-1 text-xs text-red-400";
+
   return (
     <div className="flex min-h-screen items-center justify-center bg-[#0a0f1e] px-4">
       <div className="w-full max-w-md rounded-2xl border border-[#1f2937] bg-[#111827] p-8">
         <h1 className="mb-6 text-center text-2xl font-bold text-[#f9fafb]">
-          Create Account
+          Crear Cuenta
         </h1>
 
         {generalError && (
-          <p className="mb-4 rounded-lg bg-red-500/10 p-3 text-sm text-red-400" role="alert">
+          <p
+            className="mb-4 rounded-lg bg-red-500/10 p-3 text-sm text-red-400"
+            role="alert"
+          >
             {generalError}
           </p>
         )}
 
-        <form onSubmit={handleSubmit} noValidate className="space-y-4">
+        <form
+          onSubmit={handleSubmit(onSubmit)}
+          noValidate
+          className="space-y-4"
+        >
+          {/* Name */}
           <div>
-            <label htmlFor="name" className="mb-1 block text-sm font-medium text-[#cbd5e1]">
-              Name
+            <label
+              htmlFor="name"
+              className="mb-1 block text-sm font-medium text-[#cbd5e1]"
+            >
+              Nombre
             </label>
             <input
               id="name"
               type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="w-full rounded-lg border border-[#1f2937] bg-[#0f172a] px-3 py-2 text-sm text-[#f9fafb] placeholder-[#6b7280] outline-none focus:border-[#3b82f6] focus:ring-1 focus:ring-[#3b82f6]"
-              placeholder="Your name"
-              aria-invalid={!!fieldErrors.name}
-              aria-describedby={fieldErrors.name ? "name-error" : undefined}
+              {...register("name")}
+              className={inputClass}
+              placeholder="Tu nombre"
+              aria-invalid={!!errors.name}
+              aria-describedby={errors.name ? "name-error" : undefined}
             />
-            {fieldErrors.name && (
-              <p id="name-error" className="mt-1 text-xs text-red-400">{fieldErrors.name}</p>
+            {errors.name && (
+              <p id="name-error" className={errorClass}>
+                {errors.name.message}
+              </p>
             )}
           </div>
 
+          {/* Email */}
           <div>
-            <label htmlFor="email" className="mb-1 block text-sm font-medium text-[#cbd5e1]">
-              Email
+            <label
+              htmlFor="email"
+              className="mb-1 block text-sm font-medium text-[#cbd5e1]"
+            >
+              Correo electrónico
             </label>
             <input
               id="email"
               type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full rounded-lg border border-[#1f2937] bg-[#0f172a] px-3 py-2 text-sm text-[#f9fafb] placeholder-[#6b7280] outline-none focus:border-[#3b82f6] focus:ring-1 focus:ring-[#3b82f6]"
-              placeholder="you@example.com"
-              aria-invalid={!!fieldErrors.email}
-              aria-describedby={fieldErrors.email ? "email-error" : undefined}
+              {...register("email")}
+              className={inputClass}
+              placeholder="tu@ejemplo.com"
+              aria-invalid={!!errors.email}
+              aria-describedby={errors.email ? "email-error" : undefined}
             />
-            {fieldErrors.email && (
-              <p id="email-error" className="mt-1 text-xs text-red-400">{fieldErrors.email}</p>
+            {errors.email && (
+              <p id="email-error" className={errorClass}>
+                {errors.email.message}
+              </p>
             )}
           </div>
 
+          {/* Password */}
           <div>
-            <label htmlFor="password" className="mb-1 block text-sm font-medium text-[#cbd5e1]">
-              Password
+            <label
+              htmlFor="password"
+              className="mb-1 block text-sm font-medium text-[#cbd5e1]"
+            >
+              Contraseña
             </label>
-            <input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full rounded-lg border border-[#1f2937] bg-[#0f172a] px-3 py-2 text-sm text-[#f9fafb] placeholder-[#6b7280] outline-none focus:border-[#3b82f6] focus:ring-1 focus:ring-[#3b82f6]"
-              placeholder="At least 8 characters"
-              aria-invalid={!!fieldErrors.password}
-              aria-describedby={fieldErrors.password ? "password-error" : undefined}
-            />
-            {fieldErrors.password && (
-              <p id="password-error" className="mt-1 text-xs text-red-400">{fieldErrors.password}</p>
+            <div className="relative">
+              <input
+                id="password"
+                type={showPassword ? "text" : "password"}
+                {...register("password")}
+                className={`${inputClass} pr-10`}
+                placeholder="Mín. 8 caracteres, 1 mayúscula, 1 número, 1 especial"
+                aria-invalid={!!errors.password}
+                aria-describedby={errors.password ? "password-error" : undefined}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword((prev) => !prev)}
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-[#6b7280] hover:text-[#cbd5e1]"
+                aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
+              >
+                {showPassword ? (
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
+                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94" />
+                    <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19" />
+                    <line x1="1" y1="1" x2="23" y2="23" />
+                  </svg>
+                ) : (
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                    <circle cx="12" cy="12" r="3" />
+                  </svg>
+                )}
+              </button>
+            </div>
+            {errors.password && (
+              <p id="password-error" className={errorClass}>
+                {errors.password.message}
+              </p>
+            )}
+          </div>
+
+          {/* Confirm Password */}
+          <div>
+            <label
+              htmlFor="confirmPassword"
+              className="mb-1 block text-sm font-medium text-[#cbd5e1]"
+            >
+              Confirmar Contraseña
+            </label>
+            <div className="relative">
+              <input
+                id="confirmPassword"
+                type={showPassword ? "text" : "password"}
+                {...register("confirmPassword")}
+                className={`${inputClass} pr-10`}
+                placeholder="Repite tu contraseña"
+                aria-invalid={!!errors.confirmPassword}
+                aria-describedby={
+                  errors.confirmPassword ? "confirmPassword-error" : undefined
+                }
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword((prev) => !prev)}
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-[#6b7280] hover:text-[#cbd5e1]"
+                aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
+              >
+                {showPassword ? (
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
+                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94" />
+                    <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19" />
+                    <line x1="1" y1="1" x2="23" y2="23" />
+                  </svg>
+                ) : (
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                    <circle cx="12" cy="12" r="3" />
+                  </svg>
+                )}
+              </button>
+            </div>
+            {errors.confirmPassword && (
+              <p id="confirmPassword-error" className={errorClass}>
+                {errors.confirmPassword.message}
+              </p>
             )}
           </div>
 
@@ -153,14 +285,14 @@ export default function RegisterPage() {
             disabled={submitting}
             className="w-full rounded-lg bg-[#3b82f6] py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#2563eb] disabled:opacity-50"
           >
-            {submitting ? "Creating account..." : "Create Account"}
+            {submitting ? "Creando cuenta..." : "Crear Cuenta"}
           </button>
         </form>
 
         <p className="mt-6 text-center text-sm text-[#6b7280]">
-          Already have an account?{" "}
+          ¿Ya tienes cuenta?{" "}
           <Link href="/auth/login" className="text-[#3b82f6] hover:underline">
-            Log in
+            Inicia sesión
           </Link>
         </p>
       </div>
