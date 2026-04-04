@@ -5,16 +5,26 @@ import {
     COLORS, FONT_SIZES, FONT_WEIGHTS, LINE_HEIGHTS,
     RADIUS, SPACING, ANIMATION_DURATIONS, CARD_STYLE,
 } from "@/lib/theme";
+import { useMediaQuery } from "@/hooks/useMediaQuery";
 import SavingsCardHeader from "./SavingsCardHeader";
 import SavingsStats from "./SavingsStats";
 import SavingsProgressBar from "./SavingsProgressBar";
 import GoalBanner from "./GoalBanner";
 import { SavingsCardProps } from "./types/SavingsCardProps";
 
+/**
+ * Displays a savings/investment goal card with progress ring, stats, and actions.
+ * Responsive: vertical layout with smaller ring on mobile, horizontal on tablet+.
+ *
+ * @param {SavingsCardProps} props - Card configuration
+ */
 export default function SavingsCard({
     title, saved, goal, color, icon,
     allocationPct, monthlyAllocation, onAllocationPctChange, actions,
 }: SavingsCardProps) {
+    const isMobile = useMediaQuery("(max-width: 767px)");
+    const ringSize = isMobile ? 80 : 96;
+
     const existingPct = goal > 0 ? Math.min((saved / goal) * 100, 100) : 0;
     const monthlyPct  = goal > 0 ? Math.min((monthlyAllocation / goal) * 100, 100 - existingPct) : 0;
     const remaining   = Math.max(goal - saved, 0);
@@ -49,7 +59,7 @@ export default function SavingsCard({
                 position:  "relative",
                 overflow:  "hidden",
             }}>
-                {/* Shimmer overlay al alcanzar la meta */}
+                {/* Shimmer overlay when goal is reached */}
                 {goalReached && (
                     <div style={{
                         position:       "absolute",
@@ -71,17 +81,17 @@ export default function SavingsCard({
                     onAllocationPctChange={onAllocationPctChange}
                 />
 
-                {/* Cuerpo: ring + datos */}
-                <div style={{ display: "flex", alignItems: "center", gap: SPACING["5"] }}>
-                    <div style={{ position: "relative", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                {/* Body: ring + stats — vertical on mobile, horizontal on tablet+ */}
+                <div className="flex flex-col items-center md:flex-row md:items-center gap-5">
+                    <div className="relative shrink-0 flex items-center justify-center">
                         <ProgressRing
                             pct={goalReached ? 100 : existingPct}
                             color={goalReached ? COLORS.goal : color}
-                            size={96} stroke={8}
+                            size={ringSize} stroke={8}
                             secondaryPct={goalReached ? 0 : monthlyPct}
                             secondaryColor={COLORS.monthly}
                         />
-                        <div style={{ position: "absolute", textAlign: "center" }}>
+                        <div className="absolute text-center">
                             {goalReached ? (
                                 <div style={{
                                     fontSize:   FONT_SIZES["4xl"],
@@ -124,11 +134,10 @@ export default function SavingsCard({
                 <GoalBanner visible={goalReached} />
 
                 {actions && (
-                    <div style={{
-                        display: "flex", justifyContent: "flex-end",
-                        gap: 8, borderTop: `1px solid ${COLORS.cardBorder}`,
-                        paddingTop: 12, marginTop: 4,
-                    }}>
+                    <div
+                        className="flex justify-end gap-2 pt-3 mt-1"
+                        style={{ borderTop: `1px solid ${COLORS.cardBorder}` }}
+                    >
                         {actions}
                     </div>
                 )}

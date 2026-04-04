@@ -2,14 +2,22 @@
 
 import { useState } from "react";
 import {
-    COLORS, FONTS, FONT_SIZES, FONT_WEIGHTS, RADIUS, SPACING,
-    CARD_STYLE, formatCurrency,
+    COLORS, FONTS, FONT_SIZES, FONT_WEIGHTS, RADIUS,
+    formatCurrency,
 } from "@/lib/theme";
 import { type ListItem } from "@/lib/types";
 import EditableListItem from "./EditableListItem";
 import AddItemForm from "./AddItemForm";
 import { EditableListProps } from "./types/EditableListProps";
 
+/**
+ * Editable list component for managing income/expense entries.
+ * Uses Tailwind responsive classes for height and layout (mobile-first).
+ * Mobile: auto height with max-h-[400px] and overflow scroll.
+ * Tablet/Desktop: fixed h-[380px].
+ *
+ * @param {EditableListProps} props - List configuration including title, items, color, icon, and CRUD callbacks
+ */
 export default function EditableList({ title, items, color, icon: Icon, onAdd, onUpdate, onDelete }: EditableListProps) {
     const [newName, setNewName]       = useState("");
     const [newAmount, setNewAmount]   = useState("");
@@ -46,14 +54,22 @@ export default function EditableList({ title, items, color, icon: Icon, onAdd, o
     const cancelEdit = () => setEditingId(null);
 
     return (
-        <div style={{ ...CARD_STYLE, gap: SPACING["3"], height: 380 }}>
+        <div
+            className="flex flex-col gap-3 h-auto max-h-[400px] md:h-[380px] md:max-h-none p-6 rounded-[16px]"
+            style={{
+                background: COLORS.card,
+                border: `1px solid ${COLORS.cardBorder}`,
+            }}
+        >
             {/* Header */}
-            <div style={{ display: "flex", alignItems: "center", gap: SPACING["2.5"], flexShrink: 0 }}>
-                <div style={{
-                    width: 36, height: 36, borderRadius: RADIUS.lg,
-                    background: color + "22",
-                    display: "flex", alignItems: "center", justifyContent: "center",
-                }}>
+            <div className="flex items-center gap-2.5 shrink-0">
+                <div
+                    className="flex items-center justify-center w-9 h-9"
+                    style={{
+                        borderRadius: RADIUS.lg,
+                        background: color + "22",
+                    }}
+                >
                     <Icon size={18} color={color} />
                 </div>
                 <span style={{
@@ -66,12 +82,8 @@ export default function EditableList({ title, items, color, icon: Icon, onAdd, o
                 </span>
             </div>
 
-            {/* Lista con scroll */}
-            <div style={{
-                flex: 1, overflowY: "auto",
-                display: "flex", flexDirection: "column",
-                gap: SPACING["2"], paddingRight: SPACING["1"],
-            }}>
+            {/* Scrollable list */}
+            <div className="flex-1 overflow-y-auto flex flex-col gap-2 pr-1">
                 {items.map(item => (
                     <EditableListItem
                         key={item.id}
@@ -103,11 +115,10 @@ export default function EditableList({ title, items, color, icon: Icon, onAdd, o
             />
 
             {/* Total */}
-            <div style={{
-                paddingTop: SPACING["3"], flexShrink: 0,
-                borderTop: `1px solid ${COLORS.cardBorder}`,
-                display: "flex", justifyContent: "space-between", alignItems: "center",
-            }}>
+            <div
+                className="flex justify-between items-center pt-3 shrink-0"
+                style={{ borderTop: `1px solid ${COLORS.cardBorder}` }}
+            >
                 <span style={{ color: COLORS.muted, fontSize: FONT_SIZES.body, fontFamily: FONTS.body }}>Total</span>
                 <span style={{ color, fontWeight: FONT_WEIGHTS.extrabold, fontSize: FONT_SIZES["2xl"], fontFamily: FONTS.heading }}>
                     {formatCurrency(total)}

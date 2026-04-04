@@ -24,24 +24,24 @@ export default function LandingPage() {
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-[#0a0f1e] px-4 text-center">
-      <h1 className="mb-3 text-4xl font-bold tracking-tight text-[#f9fafb]">
+      <h1 className="mb-3 text-[28px] md:text-4xl font-bold tracking-tight text-[#f9fafb]">
         Gestor de Presupuestos
       </h1>
-      <p className="mb-8 max-w-md text-lg text-[#cbd5e1]">
+      <p className="mb-8 max-w-md text-base md:text-lg text-[#cbd5e1]">
         Controla tus ingresos, gastos y metas de ahorro con un panel visual y claro.
         Toma el control de tus finanzas.
       </p>
 
-      <div className="flex gap-4">
+      <div className="flex flex-col w-full md:flex-row md:w-auto gap-4">
         <Link
           href="/auth/login"
-          className="rounded-lg border border-[#3b82f6] px-6 py-2.5 text-sm font-semibold text-[#3b82f6] transition-colors hover:bg-[#3b82f6]/10"
+          className="flex items-center justify-center rounded-lg border border-[#3b82f6] px-6 py-2.5 min-h-[44px] text-sm font-semibold text-[#3b82f6] transition-colors hover:bg-[#3b82f6]/10"
         >
           Iniciar Sesión
         </Link>
         <Link
           href="/auth/register"
-          className="rounded-lg bg-[#3b82f6] px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#2563eb]"
+          className="flex items-center justify-center rounded-lg bg-[#3b82f6] px-6 py-2.5 min-h-[44px] text-sm font-semibold text-white transition-colors hover:bg-[#2563eb]"
         >
           Registrarse
         </Link>

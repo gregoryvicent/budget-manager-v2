@@ -1,10 +1,18 @@
 import { Check, X, Trash2 } from "lucide-react";
 import {
-    COLORS, FONTS, FONT_SIZES, FONT_WEIGHTS, RADIUS, SPACING, TRANSITIONS,
+    COLORS, FONTS, FONT_SIZES, FONT_WEIGHTS, RADIUS, TRANSITIONS,
     formatCurrency,
 } from "@/lib/theme";
 import { EditableListItemProps } from "./types/EditableListItemProps";
 
+/**
+ * Single item row in an EditableList with inline editing support.
+ * Uses Tailwind responsive classes for layout (mobile-first).
+ * Text uses break-words to prevent horizontal overflow.
+ * All action buttons meet 44x44px touch target minimum.
+ *
+ * @param {EditableListItemProps} props - Item data, edit state, and callbacks
+ */
 export default function EditableListItem({
     item, color, isEditing,
     editName, editAmount, onEditNameChange, onEditAmountChange,
@@ -15,9 +23,7 @@ export default function EditableListItem({
         if (e.key === "Escape") onCancelEdit();
     };
 
-    const inputStyle = (flex: number): React.CSSProperties => ({
-        flex,
-        padding:      `${SPACING["1"]}px ${SPACING["2"]}px`,
+    const inputBaseStyle: React.CSSProperties = {
         borderRadius: RADIUS.md,
         background:   COLORS.bg,
         border:       `1px solid ${color}55`,
@@ -25,20 +31,19 @@ export default function EditableListItem({
         fontSize:     FONT_SIZES.body,
         fontFamily:   FONTS.body,
         outline:      "none",
-        minWidth:     0,
-    });
+    };
 
     return (
-        <div style={{
-            display: "flex", alignItems: "center", gap: SPACING["2"],
-            padding:      `${SPACING["2"]}px ${SPACING["3"]}px`,
-            background:   COLORS.surface,
-            borderRadius: RADIUS.lg,
-            flexShrink:   0,
-            animation:    "fadeIn 0.3s ease",
-            border:       isEditing ? `1px solid ${color}44` : "1px solid transparent",
-            transition:   `border-color ${TRANSITIONS.base}`,
-        }}>
+        <div
+            className="flex items-center gap-2 px-3 py-2 shrink-0"
+            style={{
+                background:   COLORS.surface,
+                borderRadius: RADIUS.lg,
+                animation:    "fadeIn 0.3s ease",
+                border:       isEditing ? `1px solid ${color}44` : "1px solid transparent",
+                transition:   `border-color ${TRANSITIONS.base}`,
+            }}
+        >
             {isEditing ? (
                 <>
                     <input
@@ -46,24 +51,28 @@ export default function EditableListItem({
                         value={editName}
                         onChange={e => onEditNameChange(e.target.value)}
                         onKeyDown={handleKeyDown}
-                        style={inputStyle(2)}
+                        className="flex-2 min-w-0 min-h-[44px] px-2 py-1"
+                        style={inputBaseStyle}
                     />
                     <input
                         value={editAmount}
                         onChange={e => onEditAmountChange(e.target.value)}
                         onKeyDown={handleKeyDown}
                         type="number" min={0}
-                        style={inputStyle(1)}
+                        className="flex-1 min-w-0 min-h-[44px] px-2 py-1"
+                        style={inputBaseStyle}
                     />
                     <button
                         onClick={onConfirmEdit}
-                        style={{ background: "none", border: "none", cursor: "pointer", color: COLORS.income, padding: SPACING["1"], flexShrink: 0 }}
+                        className="shrink-0 min-h-[44px] min-w-[44px] flex items-center justify-center cursor-pointer"
+                        style={{ background: "none", border: "none", color: COLORS.income, padding: 4 }}
                     >
                         <Check size={14} />
                     </button>
                     <button
                         onClick={onCancelEdit}
-                        style={{ background: "none", border: "none", cursor: "pointer", color: COLORS.muted, padding: SPACING["1"], flexShrink: 0 }}
+                        className="shrink-0 min-h-[44px] min-w-[44px] flex items-center justify-center cursor-pointer"
+                        style={{ background: "none", border: "none", color: COLORS.muted, padding: 4 }}
                     >
                         <X size={14} />
                     </button>
@@ -72,19 +81,25 @@ export default function EditableListItem({
                 <>
                     <span
                         onClick={onStartEdit}
-                        style={{ color: COLORS.textDim, fontSize: FONT_SIZES.body, fontFamily: FONTS.body, flex: 1, cursor: "pointer" }}
+                        className="flex-1 break-words cursor-pointer"
+                        style={{ color: COLORS.textDim, fontSize: FONT_SIZES.body, fontFamily: FONTS.body }}
                     >
                         {item.name}
                     </span>
                     <span
                         onClick={onStartEdit}
-                        style={{ color, fontWeight: FONT_WEIGHTS.bold, fontSize: FONT_SIZES.base, fontFamily: FONTS.heading, cursor: "pointer", flexShrink: 0 }}
+                        className="shrink-0 cursor-pointer"
+                        style={{ color, fontWeight: FONT_WEIGHTS.bold, fontSize: FONT_SIZES.base, fontFamily: FONTS.heading }}
                     >
                         {formatCurrency(item.amount)}
                     </span>
                     <button
                         onClick={onRemove}
-                        style={{ background: "none", border: "none", cursor: "pointer", color: COLORS.muted, padding: SPACING["1"], flexShrink: 0, transition: `color ${TRANSITIONS.base}` }}
+                        className="shrink-0 min-h-[44px] min-w-[44px] flex items-center justify-center cursor-pointer"
+                        style={{
+                            background: "none", border: "none", color: COLORS.muted,
+                            padding: 4, transition: `color ${TRANSITIONS.base}`,
+                        }}
                         onMouseOver={e => (e.currentTarget as HTMLButtonElement).style.color = COLORS.variable}
                         onMouseOut={e  => (e.currentTarget as HTMLButtonElement).style.color = COLORS.muted}
                     >

@@ -27,6 +27,7 @@ export default function YearMonthGrid({
                     <button
                         key={idx}
                         onClick={() => onSelect(year, month1)}
+                        className="min-h-[44px] text-left cursor-pointer"
                         style={{
                             padding:      `${SPACING["2"]}px ${SPACING["2.5"]}px`,
                             borderRadius: RADIUS.md,
@@ -36,8 +37,6 @@ export default function YearMonthGrid({
                             fontSize:     FONT_SIZES.cap,
                             fontFamily:   FONTS.body,
                             fontWeight:   isSelected ? FONT_WEIGHTS.semibold : FONT_WEIGHTS.regular,
-                            cursor:       "pointer",
-                            textAlign:    "left",
                             transition:   `background ${TRANSITIONS.fast}, color ${TRANSITIONS.fast}`,
                         }}
                         onMouseEnter={e => {
