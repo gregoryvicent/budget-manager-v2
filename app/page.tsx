@@ -25,11 +25,11 @@ export default function LandingPage() {
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-[#0a0f1e] px-4 text-center">
       <h1 className="mb-3 text-4xl font-bold tracking-tight text-[#f9fafb]">
-        Budget Manager
+        Gestor de Presupuestos
       </h1>
       <p className="mb-8 max-w-md text-lg text-[#cbd5e1]">
-        Track your income, expenses, and savings goals with a clear, visual dashboard.
-        Take control of your finances.
+        Controla tus ingresos, gastos y metas de ahorro con un panel visual y claro.
+        Toma el control de tus finanzas.
       </p>
 
       <div className="flex gap-4">
@@ -37,13 +37,13 @@ export default function LandingPage() {
           href="/auth/login"
           className="rounded-lg border border-[#3b82f6] px-6 py-2.5 text-sm font-semibold text-[#3b82f6] transition-colors hover:bg-[#3b82f6]/10"
         >
-          Log In
+          Iniciar Sesión
         </Link>
         <Link
           href="/auth/register"
           className="rounded-lg bg-[#3b82f6] px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#2563eb]"
         >
-          Sign Up
+          Registrarse
         </Link>
       </div>
     </div>

@@ -89,7 +89,7 @@ export default function DashboardHeader({ afterExpenses, onToggleSidebar, select
                 </button>
                 <button
                     onClick={() => signOut({ callbackUrl: "/auth/login" })}
-                    aria-label="Log out"
+                    aria-label="Cerrar sesión"
                     style={{
                         width:        40,
                         height:       40,
