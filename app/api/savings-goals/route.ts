@@ -14,7 +14,15 @@ const repo = new PrismaSavingsGoalRepository();
 export async function GET(req: NextRequest) {
   try {
     const { userId } = await requireAuth();
-    const type = new URL(req.url).searchParams.get("type") as GoalType | null;
+    const { searchParams } = new URL(req.url);
+    const type  = searchParams.get("type") as GoalType | null;
+    const year  = Number(searchParams.get("year"));
+    const month = Number(searchParams.get("month"));
+
+    if (type && year && month) {
+      const goals = await repo.findActiveByUserAndType(userId, type, year, month);
+      return NextResponse.json(goals);
+    }
 
     const goals = type
       ? await repo.findByUserAndType(userId, type)
@@ -38,15 +46,17 @@ export async function POST(req: NextRequest) {
   try {
     const { userId } = await requireAuth();
     const body = await req.json();
-    const { type, title, goalAmount } = body as {
+    const { type, title, goalAmount, year, month } = body as {
       type?: GoalType;
       title?: string;
       goalAmount?: number;
+      year?: number;
+      month?: number;
     };
 
-    if (!type || !title || goalAmount === undefined) {
+    if (!type || !title || goalAmount === undefined || !year || !month) {
       return NextResponse.json(
-        { error: "Los campos type, title y goalAmount son requeridos." },
+        { error: "Los campos type, title, goalAmount, year y month son requeridos." },
         { status: 400 },
       );
     }
@@ -58,7 +68,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const goal = await createSavingsGoal(repo, userId, type, title, goalAmount);
+    const goal = await createSavingsGoal(repo, userId, type, title, goalAmount, year, month);
     return NextResponse.json(goal, { status: 201 });
   } catch (error: unknown) {
     if (typeof error === "object" && error !== null && "status" in error) {

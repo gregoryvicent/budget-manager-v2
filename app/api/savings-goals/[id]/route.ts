@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { updateSavingsGoal } from "@/backend/application/budgetManager/UpdateSavingsGoal";
-import { deleteSavingsGoal } from "@/backend/application/budgetManager/DeleteSavingsGoal";
 import { PrismaSavingsGoalRepository } from "@/backend/adapters/db/prisma/budgetManager/PrismaSavingsGoalRepository";
 import { requireAuth } from "@/lib/apiAuth";
 
@@ -73,9 +72,10 @@ export async function PATCH(req: NextRequest, { params }: Params) {
 }
 
 /**
- * Deletes a savings goal by ID (cascades to GoalMonthSettings).
+ * Archives a savings goal from a given month onwards.
+ * Expects body: { year: number, month: number }
  */
-export async function DELETE(_req: NextRequest, { params }: Params) {
+export async function DELETE(req: NextRequest, { params }: Params) {
   try {
     const { userId } = await requireAuth();
     const { id } = await params;
@@ -83,7 +83,15 @@ export async function DELETE(_req: NextRequest, { params }: Params) {
     if ("error" in result) {
       return NextResponse.json({ error: result.error }, { status: result.status });
     }
-    await deleteSavingsGoal(repo, id);
+    const body = await req.json();
+    const { year, month } = body as { year?: number; month?: number };
+    if (!year || !month) {
+      return NextResponse.json(
+        { error: "Los campos year y month son requeridos." },
+        { status: 400 },
+      );
+    }
+    await repo.archive(id, year, month);
     return NextResponse.json({ success: true });
   } catch (error: unknown) {
     if (typeof error === "object" && error !== null && "status" in error) {

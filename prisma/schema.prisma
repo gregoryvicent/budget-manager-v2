@@ -100,6 +100,10 @@ model SavingsGoal {
   title             String
   goalAmount        Decimal            @map("goal_amount") @db.Decimal(10, 2)
   totalContributed  Decimal            @default(0) @map("total_contributed") @db.Decimal(10, 2)
+  startYear         Int                @map("start_year")
+  startMonth        Int                @map("start_month")
+  archivedYear      Int?               @map("archived_year")
+  archivedMonth     Int?               @map("archived_month")
   createdAt         DateTime           @default(now()) @map("created_at")
   updatedAt         DateTime           @updatedAt @map("updated_at")
   user              User               @relation(fields: [userId], references: [id], onDelete: Cascade)

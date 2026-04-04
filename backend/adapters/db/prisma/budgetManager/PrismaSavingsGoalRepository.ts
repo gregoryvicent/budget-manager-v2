@@ -4,14 +4,19 @@ import { SavingsGoal, GoalType } from "@/backend/domain/budgetManager/SavingsGoa
 
 /**
  * Prisma implementation of the savings goal repository.
- * Supports multiple goals per user per type.
+ * Supports multiple goals per user per type with soft-archive.
  */
 export class PrismaSavingsGoalRepository implements ISavingsGoalRepository {
-  private toModel(row: { goalAmount: { toNumber(): number }; totalContributed: { toNumber(): number }; [k: string]: unknown }): SavingsGoal {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private toModel(row: any): SavingsGoal {
     return {
-      ...(row as unknown as SavingsGoal),
+      ...row,
       goalAmount: row.goalAmount.toNumber(),
       totalContributed: row.totalContributed.toNumber(),
+      startYear: row.startYear,
+      startMonth: row.startMonth,
+      archivedYear: row.archivedYear ?? null,
+      archivedMonth: row.archivedMonth ?? null,
     };
   }
 
@@ -28,13 +33,47 @@ export class PrismaSavingsGoalRepository implements ISavingsGoalRepository {
     return rows.map(r => this.toModel(r));
   }
 
+  /**
+   * Returns goals that are active for the given year/month.
+   * A goal is active if:
+   * - Its start date is on or before the given month
+   * - It has no archive date, or its archive date is after the given month
+   */
+  async findActiveByUserAndType(userId: string, type: GoalType, year: number, month: number): Promise<SavingsGoal[]> {
+    const rows = await prisma.savingsGoal.findMany({
+      where: {
+        userId,
+        type,
+        AND: [
+          // Started on or before this month
+          {
+            OR: [
+              { startYear: { lt: year } },
+              { startYear: year, startMonth: { lte: month } },
+            ],
+          },
+          // Not archived yet, or archived after this month
+          {
+            OR: [
+              { archivedYear: null },
+              { archivedYear: { gt: year } },
+              { archivedYear: year, archivedMonth: { gt: month } },
+            ],
+          },
+        ],
+      },
+      orderBy: { createdAt: "asc" },
+    });
+    return rows.map(r => this.toModel(r));
+  }
+
   async findById(id: string): Promise<SavingsGoal | null> {
     const row = await prisma.savingsGoal.findUnique({ where: { id } });
     if (!row) return null;
     return this.toModel(row);
   }
 
-  async create(data: Pick<SavingsGoal, "userId" | "type" | "title" | "goalAmount">): Promise<SavingsGoal> {
+  async create(data: Pick<SavingsGoal, "userId" | "type" | "title" | "goalAmount" | "startYear" | "startMonth">): Promise<SavingsGoal> {
     const row = await prisma.savingsGoal.create({ data });
     return this.toModel(row);
   }
@@ -44,14 +83,18 @@ export class PrismaSavingsGoalRepository implements ISavingsGoalRepository {
     return this.toModel(row);
   }
 
+  async archive(id: string, year: number, month: number): Promise<SavingsGoal> {
+    const row = await prisma.savingsGoal.update({
+      where: { id },
+      data: { archivedYear: year, archivedMonth: month },
+    });
+    return this.toModel(row);
+  }
+
   async delete(id: string): Promise<void> {
     await prisma.savingsGoal.delete({ where: { id } });
   }
 
-  /**
-   * Recalculates totalContributed by summing all GoalMonthSetting.amountContributed
-   * for this goal and persisting the result.
-   */
   async recalcTotalContributed(id: string): Promise<SavingsGoal> {
     const agg = await prisma.goalMonthSetting.aggregate({
       where: { savingsGoalId: id, amountContributed: { not: null } },
@@ -65,10 +108,6 @@ export class PrismaSavingsGoalRepository implements ISavingsGoalRepository {
     return this.toModel(row);
   }
 
-  /**
-   * Sums amountContributed for a goal up to and including the given year/month.
-   * Joins through BudgetMonth to filter by date.
-   */
   async sumContributedUpTo(id: string, year: number, month: number): Promise<number> {
     const settings = await prisma.goalMonthSetting.findMany({
       where: {

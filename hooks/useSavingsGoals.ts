@@ -42,7 +42,7 @@ export const useSavingsGoals = (type: GoalType, year: number, month: number): Us
         setLoading(true);
         setError(null);
         try {
-            const res = await fetch(`/api/savings-goals?type=${type}`);
+            const res = await fetch(`/api/savings-goals?type=${type}&year=${year}&month=${month}`);
             const list = await res.json();
             if (!res.ok) throw new Error(list.error);
 
@@ -70,7 +70,7 @@ export const useSavingsGoals = (type: GoalType, year: number, month: number): Us
         const res = await fetch("/api/savings-goals", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ type, title, goalAmount }),
+            body: JSON.stringify({ type, title, goalAmount, year, month }),
         });
         const data = await res.json();
         if (!res.ok) throw new Error(data.error);
@@ -89,7 +89,11 @@ export const useSavingsGoals = (type: GoalType, year: number, month: number): Us
     };
 
     const remove = async (id: string) => {
-        const res = await fetch(`/api/savings-goals/${id}`, { method: "DELETE" });
+        const res = await fetch(`/api/savings-goals/${id}`, {
+            method: "DELETE",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ year, month }),
+        });
         if (!res.ok) {
             const data = await res.json();
             throw new Error(data.error);
