@@ -79,12 +79,12 @@ export default function LoginPage() {
   if (status === "loading") return null;
 
   const inputClass =
-    "w-full rounded-lg border border-[#1f2937] bg-[#0f172a] px-3 py-2 text-sm text-[#f9fafb] placeholder-[#6b7280] outline-none focus:border-[#3b82f6] focus:ring-1 focus:ring-[#3b82f6]";
+    "w-full min-h-[44px] rounded-lg border border-[#1f2937] bg-[#0f172a] px-3 py-2 text-sm text-[#f9fafb] placeholder-[#6b7280] outline-none focus:border-[#3b82f6] focus:ring-1 focus:ring-[#3b82f6]";
   const errorClass = "mt-1 text-xs text-red-400";
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-[#0a0f1e] px-4">
-      <div className="w-full max-w-md rounded-2xl border border-[#1f2937] bg-[#111827] p-8">
+      <div className="w-full mx-4 md:max-w-md rounded-2xl border border-[#1f2937] bg-[#111827] p-5 md:p-8">
         <h1 className="mb-6 text-center text-2xl font-bold text-[#f9fafb]">
           Iniciar Sesión
         </h1>
@@ -142,7 +142,7 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={submitting}
-            className="w-full rounded-lg bg-[#3b82f6] py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#2563eb] disabled:opacity-50"
+            className="w-full min-h-[44px] rounded-lg bg-[#3b82f6] py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#2563eb] disabled:opacity-50"
           >
             {submitting ? "Iniciando sesión..." : "Iniciar Sesión"}
           </button>

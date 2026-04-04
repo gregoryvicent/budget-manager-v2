@@ -5,6 +5,12 @@ import {
 } from "@/lib/theme";
 import { FinancialSummaryChartProps } from "./types/FinancialSummaryChartProps";
 
+/**
+ * Horizontal bar chart showing financial summary (income, expenses, savings, etc.).
+ * Uses text-xs and truncate for mobile legibility. Full width within parent grid.
+ *
+ * @param {FinancialSummaryChartProps} props - Chart data and total income reference
+ */
 export default function FinancialSummaryChart({ data, totalIncome }: FinancialSummaryChartProps) {
     const max = Math.max(...data.map((d) => Math.abs(d.value)));
 
@@ -20,46 +26,55 @@ export default function FinancialSummaryChart({ data, totalIncome }: FinancialSu
                 Resumen Financiero
             </div>
 
-            <div style={{ display: "flex", flexDirection: "column", gap: SPACING["3"] }}>
+            <div className="flex flex-col gap-3">
                 {data.map((item, i) => {
                     const isDeficit = item.value < 0;
                     const pct      = totalIncome > 0 ? (Math.abs(item.value) / totalIncome) * 100 : 0;
                     const barWidth = max > 0 ? (Math.abs(item.value) / max) * 100 : 0;
                     return (
-                        <div key={i} style={{ display: "flex", flexDirection: "column", gap: SPACING["1"] }}>
-                            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                                <div style={{ display: "flex", alignItems: "center", gap: SPACING["2"] }}>
-                                    <div style={{
-                                        width: SPACING["2"], height: SPACING["2"], borderRadius: "50%",
-                                        background: item.color, flexShrink: 0,
-                                    }} />
-                                    <span style={{
-                                        color:      COLORS.muted,
-                                        fontSize:   FONT_SIZES.sm,
-                                        fontFamily: FONTS.body,
-                                    }}>
+                        <div key={i} className="flex flex-col gap-1">
+                            <div className="flex justify-between items-center">
+                                <div className="flex items-center gap-2 min-w-0">
+                                    <div
+                                        className="shrink-0"
+                                        style={{
+                                            width: SPACING["2"], height: SPACING["2"], borderRadius: "50%",
+                                            background: item.color,
+                                        }}
+                                    />
+                                    <span
+                                        className="text-xs truncate"
+                                        style={{
+                                            color:      COLORS.muted,
+                                            fontFamily: FONTS.body,
+                                        }}
+                                    >
                                         {item.name}
                                     </span>
                                 </div>
-                                <div style={{ display: "flex", alignItems: "center", gap: SPACING["2.5"] }}>
-                                    <span style={{
-                                        color:      item.color,
-                                        fontSize:   FONT_SIZES.sm,
-                                        fontWeight: FONT_WEIGHTS.bold,
-                                        fontFamily: FONTS.heading,
-                                        minWidth:   38,
-                                        textAlign:  "right",
-                                    }}>
+                                <div className="flex items-center gap-2.5 shrink-0">
+                                    <span
+                                        className="text-xs truncate"
+                                        style={{
+                                            color:      item.color,
+                                            fontWeight: FONT_WEIGHTS.bold,
+                                            fontFamily: FONTS.heading,
+                                            minWidth:   38,
+                                            textAlign:  "right",
+                                        }}
+                                    >
                                         {isDeficit ? "-" : ""}{pct.toFixed(1)}%
                                     </span>
-                                    <span style={{
-                                        color:      isDeficit ? item.color : COLORS.text,
-                                        fontSize:   FONT_SIZES.cap,
-                                        fontWeight: FONT_WEIGHTS.semibold,
-                                        fontFamily: FONTS.heading,
-                                        minWidth:   64,
-                                        textAlign:  "right",
-                                    }}>
+                                    <span
+                                        className="text-xs truncate"
+                                        style={{
+                                            color:      isDeficit ? item.color : COLORS.text,
+                                            fontWeight: FONT_WEIGHTS.semibold,
+                                            fontFamily: FONTS.heading,
+                                            minWidth:   64,
+                                            textAlign:  "right",
+                                        }}
+                                    >
                                         {isDeficit ? "-" : ""}{formatCurrency(Math.abs(item.value))}
                                     </span>
                                 </div>

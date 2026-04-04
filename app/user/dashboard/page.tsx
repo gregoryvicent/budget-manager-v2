@@ -18,7 +18,7 @@ import { useIncomeEntries } from "@/hooks/useIncomeEntries";
 import { useExpenseEntries } from "@/hooks/useExpenseEntries";
 import { useSavingsGoals } from "@/hooks/useSavingsGoals";
 import { useGoalMonthSettings } from "@/hooks/useGoalMonthSettings";
-import { COLORS, FONTS, SPACING } from "@/lib/theme";
+import { COLORS, FONTS } from "@/lib/theme";
 
 /**
  * Budget dashboard page. Displays income, expenses, multiple savings/investment
@@ -81,13 +81,13 @@ export default function BudgetDashboard() {
     if (status === "loading") return null;
 
     return (
-        <div style={{
-            minHeight:  "100vh",
-            background: COLORS.bg,
-            fontFamily: FONTS.body,
-            padding:    SPACING["6"],
-            boxSizing:  "border-box",
-        }}>
+        <div
+            className="min-h-screen p-4 lg:p-6 overflow-x-hidden box-border"
+            style={{
+                background: COLORS.bg,
+                fontFamily: FONTS.body,
+            }}
+        >
             <style>{`
                 @import url('https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=DM+Sans:wght@400;500;600&display=swap');
                 * { box-sizing: border-box; }
@@ -110,7 +110,7 @@ export default function BudgetDashboard() {
             />
 
             {/* KPI Grid */}
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: SPACING["4"], marginBottom: SPACING["6"] }}>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
                 <MetricCard
                     label="Ingresos Totales"
                     value={<AnimatedNumber value={totalIncome} />}
@@ -137,7 +137,7 @@ export default function BudgetDashboard() {
             </div>
 
             {/* Editable lists */}
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: SPACING["4"], marginBottom: SPACING["6"] }}>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
                 <EditableList
                     title="Fuentes de Ingresos"
                     items={incomeHook.incomes}
@@ -168,7 +168,7 @@ export default function BudgetDashboard() {
             </div>
 
             {/* Goals + Charts */}
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: SPACING["4"], marginBottom: SPACING["6"] }}>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
                 <GoalsList
                     title="Metas de Ahorro"
                     goals={savingsHook.goals}

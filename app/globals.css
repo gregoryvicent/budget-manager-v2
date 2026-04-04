@@ -14,6 +14,24 @@
   --color-sage-light: #EBF4DD;
   --color-sage: #90AB8B;
   --color-sage-dark: #5A7863;
+
+  /* Budget Manager theme tokens (synced with lib/theme.ts COLORS) */
+  --color-bg: #0a0f1e;
+  --color-card: #111827;
+  --color-surface: #0f172a;
+  --color-card-border: #1f2937;
+  --color-income: #10b981;
+  --color-fixed: #f59e0b;
+  --color-variable: #ef4444;
+  --color-savings: #3b82f6;
+  --color-investment: #8b5cf6;
+  --color-accent: #06b6d4;
+  --color-text: #f9fafb;
+  --color-text-dim: #cbd5e1;
+  --color-muted: #6b7280;
+  --color-goal: #f59e0b;
+  --color-monthly: #10b981;
+  --color-deficit: #f43f5e;
 }
 
 @media (prefers-color-scheme: dark) {

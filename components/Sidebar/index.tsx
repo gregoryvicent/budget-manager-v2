@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { X, CalendarDays, ChevronDown, ChevronRight } from "lucide-react";
 import {
-    COLORS, FONTS, FONT_SIZES, FONT_WEIGHTS, LETTER_SPACING, RADIUS, SPACING,
+    COLORS, FONTS, FONT_SIZES, FONT_WEIGHTS, LETTER_SPACING, RADIUS,
     TRANSITIONS, Z_INDEX,
 } from "@/lib/theme";
+import { useSwipeGesture } from "@/hooks/useSwipeGesture";
 import YearMonthGrid from "./YearMonthGrid";
 import { SidebarProps } from "./types/SidebarProps";
 
@@ -14,8 +15,16 @@ const YEARS = [2025, 2026];
 const now          = new Date();
 const currentYear  = now.getFullYear();
 
+/**
+ * Sidebar panel for month/year selection with swipe-to-close gesture support.
+ *
+ * @param {SidebarProps} props - Sidebar configuration and callbacks
+ */
 export default function Sidebar({ open, onToggle, selectedYear, selectedMonth, onMonthSelect }: SidebarProps) {
     const [expandedYears, setExpandedYears] = useState<number[]>([currentYear]);
+    const panelRef = useRef<HTMLDivElement>(null);
+
+    useSwipeGesture(panelRef, { onSwipeRight: onToggle, threshold: 50 });
 
     function toggleYear(year: number) {
         setExpandedYears(prev =>
@@ -34,41 +43,26 @@ export default function Sidebar({ open, onToggle, selectedYear, selectedMonth, o
             {open && (
                 <div
                     onClick={onToggle}
-                    style={{
-                        position:       "fixed",
-                        inset:           0,
-                        background:     "rgba(0,0,0,0.4)",
-                        zIndex:          Z_INDEX.overlay,
-                        backdropFilter: "blur(2px)",
-                    }}
+                    className="fixed inset-0 bg-black/40 backdrop-blur-[2px]"
+                    style={{ zIndex: Z_INDEX.overlay }}
                 />
             )}
 
             {/* Panel */}
-            <div style={{
-                position:      "fixed",
-                top:            0,
-                right:          0,
-                height:        "100vh",
-                width:          280,
-                background:     COLORS.card,
-                borderLeft:    `1px solid ${COLORS.cardBorder}`,
-                zIndex:         Z_INDEX.panel,
-                transform:      open ? "translateX(0)" : "translateX(100%)",
-                transition:    `transform ${TRANSITIONS.moderate} cubic-bezier(0.4, 0, 0.2, 1)`,
-                display:       "flex",
-                flexDirection: "column",
-                padding:        SPACING["6"],
-                overflowY:     "auto",
-            }}>
+            <div
+                ref={panelRef}
+                className="fixed top-0 right-0 h-screen w-[85vw] md:w-[280px] flex flex-col p-6 overflow-y-auto"
+                style={{
+                    background:     COLORS.card,
+                    borderLeft:    `1px solid ${COLORS.cardBorder}`,
+                    zIndex:         Z_INDEX.panel,
+                    transform:      open ? "translateX(0)" : "translateX(100%)",
+                    transition:    `transform ${TRANSITIONS.moderate} cubic-bezier(0.4, 0, 0.2, 1)`,
+                }}
+            >
                 {/* Header */}
-                <div style={{
-                    display:        "flex",
-                    alignItems:     "center",
-                    justifyContent: "space-between",
-                    marginBottom:   SPACING["7"],
-                }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: SPACING["2"] }}>
+                <div className="flex items-center justify-between mb-7">
+                    <div className="flex items-center gap-2">
                         <CalendarDays size={16} color={COLORS.accent} />
                         <span style={{
                             fontFamily: FONTS.heading,
@@ -81,40 +75,25 @@ export default function Sidebar({ open, onToggle, selectedYear, selectedMonth, o
                     </div>
                     <button
                         onClick={onToggle}
-                        style={{
-                            background:     "none",
-                            border:         "none",
-                            cursor:         "pointer",
-                            display:        "flex",
-                            alignItems:     "center",
-                            justifyContent: "center",
-                            padding:        SPACING["1"],
-                            borderRadius:   RADIUS.md,
-                        }}
+                        className="flex items-center justify-center min-h-[44px] min-w-[44px] bg-transparent border-none cursor-pointer"
+                        style={{ borderRadius: RADIUS.md }}
                     >
                         <X size={18} color={COLORS.muted} />
                     </button>
                 </div>
 
-                {/* Años y meses */}
-                <div style={{ display: "flex", flexDirection: "column", gap: SPACING["2"] }}>
+                {/* Years and months */}
+                <div className="flex flex-col gap-2">
                     {YEARS.map(year => {
                         const isExpanded = expandedYears.includes(year);
                         return (
                             <div key={year}>
                                 <button
                                     onClick={() => toggleYear(year)}
+                                    className="w-full flex items-center justify-between min-h-[44px] bg-transparent border-none cursor-pointer mb-1"
                                     style={{
-                                        width:          "100%",
-                                        display:        "flex",
-                                        alignItems:     "center",
-                                        justifyContent: "space-between",
-                                        background:     "none",
-                                        border:         "none",
-                                        cursor:         "pointer",
-                                        padding:        `${SPACING["2"]}px ${SPACING["2.5"]}px`,
+                                        padding:        "8px 10px",
                                         borderRadius:   RADIUS.lg,
-                                        marginBottom:   SPACING["1"],
                                         transition:     `background ${TRANSITIONS.fast}`,
                                     }}
                                     onMouseEnter={e => (e.currentTarget.style.background = COLORS.cardBorder + "80")}

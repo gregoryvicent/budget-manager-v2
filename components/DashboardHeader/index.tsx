@@ -8,79 +8,92 @@ import {
 } from "@/lib/theme";
 import { DashboardHeaderProps } from "./types/DashboardHeaderProps";
 
+/**
+ * Dashboard header with greeting, month label, balance badge, and action buttons.
+ * Responsive: vertical layout on mobile, horizontal on tablet+.
+ * Badge text hidden on mobile (icon-only). Buttons meet 44px touch targets.
+ *
+ * @param {DashboardHeaderProps} props - Header configuration
+ */
 export default function DashboardHeader({ afterExpenses, onToggleSidebar, selectedYear, selectedMonth, userName }: DashboardHeaderProps) {
     const monthLabel = new Date(selectedYear, selectedMonth - 1)
         .toLocaleDateString("es-CO", { month: "long", year: "numeric" });
 
     return (
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: SPACING["8"] }}>
+        <div className="flex flex-col items-start md:flex-row md:items-center justify-between mb-8 gap-4">
             <div>
-                <div style={{ display: "flex", alignItems: "center", gap: SPACING["2.5"] }}>
-                    <div style={{
-                        width: 40, height: 40, borderRadius: RADIUS.xl,
-                        background: `linear-gradient(135deg, ${COLORS.accent}, ${COLORS.investment})`,
-                        display: "flex", alignItems: "center", justifyContent: "center",
-                    }}>
+                <div className="flex items-center gap-2.5">
+                    <div
+                        className="flex items-center justify-center"
+                        style={{
+                            width: 40, height: 40, borderRadius: RADIUS.xl,
+                            background: `linear-gradient(135deg, ${COLORS.accent}, ${COLORS.investment})`,
+                        }}
+                    >
                         <Wallet size={20} color={COLORS.text} />
                     </div>
-                    <h1 style={{
-                        margin: 0,
-                        fontSize:   FONT_SIZES["3xl"],
-                        fontWeight: FONT_WEIGHTS.extrabold,
-                        fontFamily: FONTS.heading,
-                        color:      COLORS.text,
-                        background: `linear-gradient(90deg, ${COLORS.text}, ${COLORS.accent})`,
-                        WebkitBackgroundClip: "text",
-                        WebkitTextFillColor:  "transparent",
-                    }}>
+                    <h1
+                        className="m-0 text-xl lg:text-[22px]"
+                        style={{
+                            fontWeight: FONT_WEIGHTS.extrabold,
+                            fontFamily: FONTS.heading,
+                            color: COLORS.text,
+                            background: `linear-gradient(90deg, ${COLORS.text}, ${COLORS.accent})`,
+                            WebkitBackgroundClip: "text",
+                            WebkitTextFillColor: "transparent",
+                        }}
+                    >
                         Hola, {userName}
                     </h1>
                 </div>
                 <p style={{
                     margin: "6px 0 0 50px",
-                    fontSize:   FONT_SIZES.lg,
+                    fontSize: FONT_SIZES.lg,
                     fontFamily: FONTS.heading,
                     fontWeight: FONT_WEIGHTS.semibold,
-                    color:      COLORS.accent,
+                    color: COLORS.accent,
                     letterSpacing: "0.02em",
                 }}>
                     Presupuesto de {monthLabel}
                 </p>
             </div>
 
-            <div style={{ display: "flex", alignItems: "center", gap: SPACING["2.5"] }}>
-                <div style={{
-                    padding:      `${SPACING["2.5"]}px ${SPACING["5"]}px`,
-                    borderRadius: RADIUS.xl,
-                    background:   afterExpenses >= 0 ? COLORS.income + "22" : COLORS.variable + "22",
-                    border:       `1px solid ${afterExpenses >= 0 ? COLORS.income : COLORS.variable}44`,
-                    display:      "flex", alignItems: "center", gap: SPACING["2"],
-                }}>
+            <div className="flex items-center gap-2.5">
+                {/* Balance badge — icon-only on mobile, full text on md+ */}
+                <div
+                    className="flex items-center gap-2"
+                    style={{
+                        padding: `${SPACING["2.5"]}px ${SPACING["5"]}px`,
+                        borderRadius: RADIUS.xl,
+                        background: afterExpenses >= 0 ? COLORS.income + "22" : COLORS.variable + "22",
+                        border: `1px solid ${afterExpenses >= 0 ? COLORS.income : COLORS.variable}44`,
+                    }}
+                >
                     {afterExpenses >= 0
                         ? <TrendingUp   size={16} color={COLORS.income}   />
                         : <TrendingDown size={16} color={COLORS.variable} />
                     }
-                    <span style={{
-                        color:      afterExpenses >= 0 ? COLORS.income : COLORS.variable,
-                        fontWeight: FONT_WEIGHTS.bold,
-                        fontFamily: FONTS.heading,
-                        fontSize:   FONT_SIZES.base,
-                    }}>
+                    <span
+                        className="hidden md:inline"
+                        style={{
+                            color: afterExpenses >= 0 ? COLORS.income : COLORS.variable,
+                            fontWeight: FONT_WEIGHTS.bold,
+                            fontFamily: FONTS.heading,
+                            fontSize: FONT_SIZES.base,
+                        }}
+                    >
                         {afterExpenses >= 0 ? "Saldo positivo" : "Saldo negativo"}
                     </span>
                 </div>
                 <button
                     onClick={onToggleSidebar}
+                    className="flex items-center justify-center shrink-0 min-h-[44px] min-w-[44px] cursor-pointer"
                     style={{
-                        width:        40,
-                        height:       40,
+                        width: 44, height: 44,
                         borderRadius: RADIUS.xl,
-                        background:   COLORS.card,
-                        border:       `1px solid ${COLORS.cardBorder}`,
-                        display:      "flex", alignItems: "center", justifyContent: "center",
-                        cursor:       "pointer",
-                        transition:   `background ${TRANSITIONS.base}`,
-                        flexShrink:   0,
+                        background: COLORS.card,
+                        border: `1px solid ${COLORS.cardBorder}`,
+                        transition: `background ${TRANSITIONS.base}`,
                     }}
                     onMouseEnter={e => (e.currentTarget.style.background = COLORS.cardBorder)}
                     onMouseLeave={e => (e.currentTarget.style.background = COLORS.card)}
@@ -90,16 +103,13 @@ export default function DashboardHeader({ afterExpenses, onToggleSidebar, select
                 <button
                     onClick={() => signOut({ callbackUrl: "/auth/login" })}
                     aria-label="Cerrar sesión"
+                    className="flex items-center justify-center shrink-0 min-h-[44px] min-w-[44px] cursor-pointer"
                     style={{
-                        width:        40,
-                        height:       40,
+                        width: 44, height: 44,
                         borderRadius: RADIUS.xl,
-                        background:   COLORS.card,
-                        border:       `1px solid ${COLORS.cardBorder}`,
-                        display:      "flex", alignItems: "center", justifyContent: "center",
-                        cursor:       "pointer",
-                        transition:   `background ${TRANSITIONS.base}`,
-                        flexShrink:   0,
+                        background: COLORS.card,
+                        border: `1px solid ${COLORS.cardBorder}`,
+                        transition: `background ${TRANSITIONS.base}`,
                     }}
                     onMouseEnter={e => (e.currentTarget.style.background = COLORS.cardBorder)}
                     onMouseLeave={e => (e.currentTarget.style.background = COLORS.card)}
