@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useSession } from "next-auth/react";
 import { TrendingUp, TrendingDown, DollarSign, Shield } from "lucide-react";
 
@@ -19,6 +19,8 @@ import { useExpenseEntries } from "@/hooks/useExpenseEntries";
 import { useSavingsGoals } from "@/hooks/useSavingsGoals";
 import { useGoalMonthSettings } from "@/hooks/useGoalMonthSettings";
 import { COLORS, FONTS } from "@/lib/theme";
+import { getCategoryColor } from "@/lib/breakdownPalette";
+import type { BreakdownData } from "@/components/DistributionChart/types/BreakdownData";
 
 /**
  * Budget dashboard page. Displays income, expenses, multiple savings/investment
@@ -77,6 +79,75 @@ export default function BudgetDashboard() {
             color: afterExpenses >= 0 ? COLORS.accent : COLORS.deficit,
         },
     ];
+
+    const breakdownData: BreakdownData = useMemo(() => {
+        const incomeItems = incomeHook.incomes.map((item, i) => ({
+            name: item.name,
+            value: item.amount,
+            color: getCategoryColor("incomes", i),
+        }));
+
+        const fixedItems = fixedHook.expenses.map((item, i) => ({
+            name: item.name,
+            value: item.amount,
+            color: getCategoryColor("expenses", i),
+        }));
+
+        const variableItems = variableHook.expenses.map((item, i) => ({
+            name: item.name,
+            value: item.amount,
+            color: getCategoryColor("expenses", fixedItems.length + i),
+        }));
+
+        const allExpenseItems = [...fixedItems, ...variableItems];
+
+        const savingsItems = savingsHook.goals
+            .filter(g => (goalSettings.settings.get(g.id) ?? 0) > 0)
+            .map((g, i) => ({
+                name: g.title,
+                value: totalIncome * (goalSettings.settings.get(g.id)!) / 100,
+                color: getCategoryColor("savings", i),
+            }));
+
+        const investmentItems = investmentHook.goals
+            .filter(g => (goalSettings.settings.get(g.id) ?? 0) > 0)
+            .map((g, i) => ({
+                name: g.title,
+                value: totalIncome * (goalSettings.settings.get(g.id)!) / 100,
+                color: getCategoryColor("investments", i),
+            }));
+
+        return {
+            incomes: {
+                title: "Ingresos",
+                items: incomeItems,
+                referenceTotal: totalIncome,
+                emptyMessage: "Sin ingresos",
+            },
+            expenses: {
+                title: "Gastos",
+                items: allExpenseItems,
+                referenceTotal: totalExpenses,
+                emptyMessage: "Sin gastos",
+            },
+            savings: {
+                title: "Ahorros",
+                items: savingsItems,
+                referenceTotal: totalSavingsAllocation,
+                emptyMessage: "Sin metas de ahorro asignadas",
+            },
+            investments: {
+                title: "Inversiones",
+                items: investmentItems,
+                referenceTotal: totalInvestmentAllocation,
+                emptyMessage: "Sin metas de inversión asignadas",
+            },
+        };
+    }, [
+        incomeHook.incomes, fixedHook.expenses, variableHook.expenses,
+        savingsHook.goals, investmentHook.goals, goalSettings.settings,
+        totalIncome, totalExpenses, totalSavingsAllocation, totalInvestmentAllocation,
+    ]);
 
     if (status === "loading") return null;
 
@@ -200,7 +271,7 @@ export default function BudgetDashboard() {
                     }}
                 />
                 <FinancialSummaryChart data={barData} totalIncome={totalIncome} />
-                <DistributionChart data={pieData} totalIncome={totalIncome} />
+                <DistributionChart data={pieData} totalIncome={totalIncome} breakdownData={breakdownData} />
             </div>
 
             <Sidebar

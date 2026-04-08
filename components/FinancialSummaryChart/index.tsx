@@ -12,7 +12,8 @@ import { FinancialSummaryChartProps } from "./types/FinancialSummaryChartProps";
  * @param {FinancialSummaryChartProps} props - Chart data and total income reference
  */
 export default function FinancialSummaryChart({ data, totalIncome }: FinancialSummaryChartProps) {
-    const max = Math.max(...data.map((d) => Math.abs(d.value)));
+    const sorted = [...data].sort((a, b) => Math.abs(b.value) - Math.abs(a.value));
+    const max = Math.max(...sorted.map((d) => Math.abs(d.value)));
 
     return (
         <div style={{ ...CARD_STYLE, gap: 0 }}>
@@ -27,7 +28,7 @@ export default function FinancialSummaryChart({ data, totalIncome }: FinancialSu
             </div>
 
             <div className="flex flex-col gap-3">
-                {data.map((item, i) => {
+                {sorted.map((item, i) => {
                     const isDeficit = item.value < 0;
                     const pct      = totalIncome > 0 ? (Math.abs(item.value) / totalIncome) * 100 : 0;
                     const barWidth = max > 0 ? (Math.abs(item.value) / max) * 100 : 0;
