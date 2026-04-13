@@ -1,12 +1,14 @@
 "use client";
 
 import { signOut } from "next-auth/react";
-import { TrendingUp, TrendingDown, Wallet, CalendarDays, LogOut } from "lucide-react";
+import Link from "next/link";
+import { TrendingUp, TrendingDown, Wallet, CalendarDays, LogOut, BarChart3 } from "lucide-react";
 import {
     COLORS, FONTS, FONT_SIZES, FONT_WEIGHTS,
     RADIUS, SPACING, TRANSITIONS,
 } from "@/lib/theme";
 import { DashboardHeaderProps } from "./types/DashboardHeaderProps";
+import Tooltip from "@/components/Tooltip";
 
 /**
  * Dashboard header with greeting, month label, balance badge, and action buttons.
@@ -85,37 +87,59 @@ export default function DashboardHeader({ afterExpenses, onToggleSidebar, select
                         {afterExpenses >= 0 ? "Saldo positivo" : "Saldo negativo"}
                     </span>
                 </div>
-                <button
-                    onClick={onToggleSidebar}
-                    className="flex items-center justify-center shrink-0 min-h-[44px] min-w-[44px] cursor-pointer"
-                    style={{
-                        width: 44, height: 44,
-                        borderRadius: RADIUS.xl,
-                        background: COLORS.card,
-                        border: `1px solid ${COLORS.cardBorder}`,
-                        transition: `background ${TRANSITIONS.base}`,
-                    }}
-                    onMouseEnter={e => (e.currentTarget.style.background = COLORS.cardBorder)}
-                    onMouseLeave={e => (e.currentTarget.style.background = COLORS.card)}
-                >
-                    <CalendarDays size={18} color={COLORS.muted} />
-                </button>
-                <button
-                    onClick={() => signOut({ callbackUrl: "/auth/login" })}
-                    aria-label="Cerrar sesión"
-                    className="flex items-center justify-center shrink-0 min-h-[44px] min-w-[44px] cursor-pointer"
-                    style={{
-                        width: 44, height: 44,
-                        borderRadius: RADIUS.xl,
-                        background: COLORS.card,
-                        border: `1px solid ${COLORS.cardBorder}`,
-                        transition: `background ${TRANSITIONS.base}`,
-                    }}
-                    onMouseEnter={e => (e.currentTarget.style.background = COLORS.cardBorder)}
-                    onMouseLeave={e => (e.currentTarget.style.background = COLORS.card)}
-                >
-                    <LogOut size={18} color={COLORS.muted} />
-                </button>
+                <Tooltip label="Ver historial">
+                    <Link
+                        href="/user/history"
+                        aria-label="Ver historial de presupuesto"
+                        className="flex items-center justify-center shrink-0 min-h-[44px] min-w-[44px]"
+                        style={{
+                            width: 44, height: 44,
+                            borderRadius: RADIUS.xl,
+                            background: COLORS.card,
+                            border: `1px solid ${COLORS.cardBorder}`,
+                            transition: `background ${TRANSITIONS.base}`,
+                        }}
+                        onMouseEnter={e => (e.currentTarget.style.background = COLORS.cardBorder)}
+                        onMouseLeave={e => (e.currentTarget.style.background = COLORS.card)}
+                    >
+                        <BarChart3 size={18} color={COLORS.muted} />
+                    </Link>
+                </Tooltip>
+                <Tooltip label="Cambiar mes">
+                    <button
+                        onClick={onToggleSidebar}
+                        className="flex items-center justify-center shrink-0 min-h-[44px] min-w-[44px] cursor-pointer"
+                        style={{
+                            width: 44, height: 44,
+                            borderRadius: RADIUS.xl,
+                            background: COLORS.card,
+                            border: `1px solid ${COLORS.cardBorder}`,
+                            transition: `background ${TRANSITIONS.base}`,
+                        }}
+                        onMouseEnter={e => (e.currentTarget.style.background = COLORS.cardBorder)}
+                        onMouseLeave={e => (e.currentTarget.style.background = COLORS.card)}
+                    >
+                        <CalendarDays size={18} color={COLORS.muted} />
+                    </button>
+                </Tooltip>
+                <Tooltip label="Cerrar sesión">
+                    <button
+                        onClick={() => signOut({ callbackUrl: "/auth/login" })}
+                        aria-label="Cerrar sesión"
+                        className="flex items-center justify-center shrink-0 min-h-[44px] min-w-[44px] cursor-pointer"
+                        style={{
+                            width: 44, height: 44,
+                            borderRadius: RADIUS.xl,
+                            background: COLORS.card,
+                            border: `1px solid ${COLORS.cardBorder}`,
+                            transition: `background ${TRANSITIONS.base}`,
+                        }}
+                        onMouseEnter={e => (e.currentTarget.style.background = COLORS.cardBorder)}
+                        onMouseLeave={e => (e.currentTarget.style.background = COLORS.card)}
+                    >
+                        <LogOut size={18} color={COLORS.muted} />
+                    </button>
+                </Tooltip>
             </div>
         </div>
     );
