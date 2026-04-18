@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { updateSavingsGoal } from "@/backend/application/budgetManager/UpdateSavingsGoal";
 import { PrismaSavingsGoalRepository } from "@/backend/adapters/db/prisma/budgetManager/PrismaSavingsGoalRepository";
 import { requireAuth } from "@/lib/apiAuth";
+import { withIdempotency } from "@/lib/withIdempotency";
 
 const repo = new PrismaSavingsGoalRepository();
 
@@ -48,9 +49,11 @@ export async function GET(req: NextRequest, { params }: Params) {
 
 /**
  * Updates a savings goal by ID.
+ * Supports idempotency via the Idempotency-Key header.
  */
 export async function PATCH(req: NextRequest, { params }: Params) {
   try {
+    const idempotencyKey = req.headers.get("Idempotency-Key");
     const { userId } = await requireAuth();
     const { id } = await params;
     const result = await findOwnedGoal(userId, id);
@@ -59,8 +62,15 @@ export async function PATCH(req: NextRequest, { params }: Params) {
     }
     const body = await req.json();
     const { title, goalAmount } = body as { title?: string; goalAmount?: number };
-    const updated = await updateSavingsGoal(repo, id, { title, goalAmount });
-    return NextResponse.json(updated);
+
+    const { response } = await withIdempotency({
+      idempotencyKey,
+      handler: async () => {
+        const updated = await updateSavingsGoal(repo, id, { title, goalAmount });
+        return NextResponse.json(updated);
+      },
+    });
+    return response;
   } catch (error: unknown) {
     if (typeof error === "object" && error !== null && "status" in error) {
       const e = error as { status: number; message: string };
@@ -74,9 +84,11 @@ export async function PATCH(req: NextRequest, { params }: Params) {
 /**
  * Archives a savings goal from a given month onwards.
  * Expects body: { year: number, month: number }
+ * Supports idempotency via the Idempotency-Key header.
  */
 export async function DELETE(req: NextRequest, { params }: Params) {
   try {
+    const idempotencyKey = req.headers.get("Idempotency-Key");
     const { userId } = await requireAuth();
     const { id } = await params;
     const result = await findOwnedGoal(userId, id);
@@ -91,8 +103,15 @@ export async function DELETE(req: NextRequest, { params }: Params) {
         { status: 400 },
       );
     }
-    await repo.archive(id, year, month);
-    return NextResponse.json({ success: true });
+
+    const { response } = await withIdempotency({
+      idempotencyKey,
+      handler: async () => {
+        await repo.archive(id, year, month);
+        return NextResponse.json({ success: true });
+      },
+    });
+    return response;
   } catch (error: unknown) {
     if (typeof error === "object" && error !== null && "status" in error) {
       const e = error as { status: number; message: string };

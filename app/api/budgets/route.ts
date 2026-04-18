@@ -3,6 +3,7 @@ import { getBudgetMonths } from "@/backend/application/budgetManager/GetBudgetMo
 import { createBudgetMonth } from "@/backend/application/budgetManager/CreateBudgetMonth";
 import { PrismaBudgetMonthRepository } from "@/backend/adapters/db/prisma/budgetManager/PrismaBudgetMonthRepository";
 import { requireAuth } from "@/lib/apiAuth";
+import { withIdempotency } from "@/lib/withIdempotency";
 
 const repo = new PrismaBudgetMonthRepository();
 
@@ -26,9 +27,11 @@ export async function GET(_req: NextRequest) {
 
 /**
  * Creates a new budget month for the authenticated user.
+ * Supports idempotency via the Idempotency-Key header.
  */
 export async function POST(req: NextRequest) {
   try {
+    const idempotencyKey = req.headers.get("Idempotency-Key");
     const { userId } = await requireAuth();
     const body = await req.json();
     const { year, month } = body as { year?: number; month?: number };
@@ -47,8 +50,14 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const budget = await createBudgetMonth(repo, { userId, year, month });
-    return NextResponse.json(budget, { status: 201 });
+    const { response } = await withIdempotency({
+      idempotencyKey,
+      handler: async () => {
+        const budget = await createBudgetMonth(repo, { userId, year, month });
+        return NextResponse.json(budget, { status: 201 });
+      },
+    });
+    return response;
   } catch (error: unknown) {
     if (typeof error === "object" && error !== null && "status" in error) {
       const e = error as { status: number; message: string };

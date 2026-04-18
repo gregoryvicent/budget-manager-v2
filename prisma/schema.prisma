@@ -133,6 +133,22 @@ model GoalMonthSetting {
 
 
 // ─────────────────────────────────────────
+// IDEMPOTENCY
+// ─────────────────────────────────────────
+
+/// Stores idempotency keys and their associated responses to prevent
+/// duplicate processing of mutating operations.
+model IdempotencyRecord {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  key        String   @unique @map("idempotency_key")
+  statusCode Int      @map("status_code")
+  body       String   @db.Text
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  @@map("idempotency_records")
+}
+
+// ─────────────────────────────────────────
 // NEXTAUTH MODELS
 // ─────────────────────────────────────────
 

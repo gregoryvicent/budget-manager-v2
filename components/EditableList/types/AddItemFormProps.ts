@@ -8,4 +8,6 @@ export interface AddItemFormProps {
     onAdd: () => void;
     onStartAdding: () => void;
     onCancel: () => void;
+    /** Whether a create operation is in progress. */
+    isCreating?: boolean;
 }

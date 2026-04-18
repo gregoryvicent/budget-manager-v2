@@ -3,6 +3,7 @@ import { getSavingsGoals } from "@/backend/application/budgetManager/GetSavingsG
 import { createSavingsGoal } from "@/backend/application/budgetManager/GetOrCreateSavingsGoal";
 import { PrismaSavingsGoalRepository } from "@/backend/adapters/db/prisma/budgetManager/PrismaSavingsGoalRepository";
 import { requireAuth } from "@/lib/apiAuth";
+import { withIdempotency } from "@/lib/withIdempotency";
 import type { GoalType } from "@/backend/domain/budgetManager/SavingsGoal";
 
 const repo = new PrismaSavingsGoalRepository();
@@ -41,9 +42,11 @@ export async function GET(req: NextRequest) {
 
 /**
  * Creates a new savings goal for the authenticated user.
+ * Supports idempotency via the Idempotency-Key header.
  */
 export async function POST(req: NextRequest) {
   try {
+    const idempotencyKey = req.headers.get("Idempotency-Key");
     const { userId } = await requireAuth();
     const body = await req.json();
     const { type, title, goalAmount, year, month } = body as {
@@ -68,8 +71,14 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const goal = await createSavingsGoal(repo, userId, type, title, goalAmount, year, month);
-    return NextResponse.json(goal, { status: 201 });
+    const { response } = await withIdempotency({
+      idempotencyKey,
+      handler: async () => {
+        const goal = await createSavingsGoal(repo, userId, type, title, goalAmount, year, month);
+        return NextResponse.json(goal, { status: 201 });
+      },
+    });
+    return response;
   } catch (error: unknown) {
     if (typeof error === "object" && error !== null && "status" in error) {
       const e = error as { status: number; message: string };

@@ -18,7 +18,7 @@ import { EditableListProps } from "./types/EditableListProps";
  *
  * @param {EditableListProps} props - List configuration including title, items, color, icon, and CRUD callbacks
  */
-export default function EditableList({ title, items, color, icon: Icon, onAdd, onUpdate, onDelete }: EditableListProps) {
+export default function EditableList({ title, items, color, icon: Icon, onAdd, onUpdate, onDelete, isCreating = false, isUpdating = false, isDeletingId = null }: EditableListProps) {
     const [newName, setNewName]       = useState("");
     const [newAmount, setNewAmount]   = useState("");
     const [adding, setAdding]         = useState(false);
@@ -98,6 +98,8 @@ export default function EditableList({ title, items, color, icon: Icon, onAdd, o
                         onConfirmEdit={confirmEdit}
                         onCancelEdit={cancelEdit}
                         onRemove={() => removeItem(item.id)}
+                        isUpdating={isUpdating && editingId === item.id}
+                        isDeleting={isDeletingId === item.id}
                     />
                 ))}
             </div>
@@ -112,6 +114,7 @@ export default function EditableList({ title, items, color, icon: Icon, onAdd, o
                 onAdd={addItem}
                 onStartAdding={() => setAdding(true)}
                 onCancel={() => setAdding(false)}
+                isCreating={isCreating}
             />
 
             {/* Total */}

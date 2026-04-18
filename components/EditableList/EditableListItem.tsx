@@ -1,4 +1,4 @@
-import { Check, X, Trash2 } from "lucide-react";
+import { Check, X, Trash2, Loader2 } from "lucide-react";
 import {
     COLORS, FONTS, FONT_SIZES, FONT_WEIGHTS, RADIUS, TRANSITIONS,
     formatCurrency,
@@ -17,6 +17,7 @@ export default function EditableListItem({
     item, color, isEditing,
     editName, editAmount, onEditNameChange, onEditAmountChange,
     onStartEdit, onConfirmEdit, onCancelEdit, onRemove,
+    isUpdating = false, isDeleting = false,
 }: EditableListItemProps) {
     const handleKeyDown = (e: React.KeyboardEvent) => {
         if (e.key === "Enter")  onConfirmEdit();
@@ -41,7 +42,9 @@ export default function EditableListItem({
                 borderRadius: RADIUS.lg,
                 animation:    "fadeIn 0.3s ease",
                 border:       isEditing ? `1px solid ${color}44` : "1px solid transparent",
-                transition:   `border-color ${TRANSITIONS.base}`,
+                transition:   `border-color ${TRANSITIONS.base}, opacity ${TRANSITIONS.base}`,
+                opacity:      isDeleting ? 0.5 : 1,
+                pointerEvents: isDeleting ? "none" : "auto",
             }}
         >
             {isEditing ? (
@@ -51,26 +54,30 @@ export default function EditableListItem({
                         value={editName}
                         onChange={e => onEditNameChange(e.target.value)}
                         onKeyDown={handleKeyDown}
+                        disabled={isUpdating}
                         className="flex-2 min-w-0 min-h-[44px] px-2 py-1"
-                        style={inputBaseStyle}
+                        style={{ ...inputBaseStyle, opacity: isUpdating ? 0.6 : 1 }}
                     />
                     <input
                         value={editAmount}
                         onChange={e => onEditAmountChange(e.target.value)}
                         onKeyDown={handleKeyDown}
+                        disabled={isUpdating}
                         type="number" min={0}
                         className="flex-1 min-w-0 min-h-[44px] px-2 py-1"
-                        style={inputBaseStyle}
+                        style={{ ...inputBaseStyle, opacity: isUpdating ? 0.6 : 1 }}
                     />
                     <button
                         onClick={onConfirmEdit}
+                        disabled={isUpdating}
                         className="shrink-0 min-h-[44px] min-w-[44px] flex items-center justify-center cursor-pointer"
                         style={{ background: "none", border: "none", color: COLORS.income, padding: 4 }}
                     >
-                        <Check size={14} />
+                        {isUpdating ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} />}
                     </button>
                     <button
                         onClick={onCancelEdit}
+                        disabled={isUpdating}
                         className="shrink-0 min-h-[44px] min-w-[44px] flex items-center justify-center cursor-pointer"
                         style={{ background: "none", border: "none", color: COLORS.muted, padding: 4 }}
                     >
@@ -95,6 +102,7 @@ export default function EditableListItem({
                     </span>
                     <button
                         onClick={onRemove}
+                        disabled={isDeleting}
                         className="shrink-0 min-h-[44px] min-w-[44px] flex items-center justify-center cursor-pointer"
                         style={{
                             background: "none", border: "none", color: COLORS.muted,
@@ -103,7 +111,7 @@ export default function EditableListItem({
                         onMouseOver={e => (e.currentTarget as HTMLButtonElement).style.color = COLORS.variable}
                         onMouseOut={e  => (e.currentTarget as HTMLButtonElement).style.color = COLORS.muted}
                     >
-                        <Trash2 size={14} />
+                        {isDeleting ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
                     </button>
                 </>
             )}

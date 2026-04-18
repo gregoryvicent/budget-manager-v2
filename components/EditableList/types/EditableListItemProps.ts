@@ -12,4 +12,8 @@ export interface EditableListItemProps {
     onConfirmEdit: () => void;
     onCancelEdit: () => void;
     onRemove: () => void;
+    /** Whether an update operation is in progress. */
+    isUpdating?: boolean;
+    /** Whether this specific item is being deleted. */
+    isDeleting?: boolean;
 }

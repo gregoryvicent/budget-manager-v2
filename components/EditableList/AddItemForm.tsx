@@ -1,4 +1,4 @@
-import { Plus } from "lucide-react";
+import { Plus, Loader2 } from "lucide-react";
 import {
     COLORS, FONTS, FONT_SIZES, FONT_WEIGHTS, RADIUS, TRANSITIONS,
 } from "@/lib/theme";
@@ -16,6 +16,7 @@ import { AddItemFormProps } from "./types/AddItemFormProps";
 export default function AddItemForm({
     adding, newName, newAmount, color,
     onNewNameChange, onNewAmountChange, onAdd, onStartAdding, onCancel,
+    isCreating = false,
 }: AddItemFormProps) {
     const handleKeyDown = (e: React.KeyboardEvent) => {
         if (e.key === "Enter")  onAdd();
@@ -49,6 +50,7 @@ export default function AddItemForm({
                 value={newName}
                 onChange={e => onNewNameChange(e.target.value)}
                 onKeyDown={handleKeyDown}
+                disabled={isCreating}
                 className="w-full md:flex-2 min-h-[44px] px-3 py-2"
                 style={{
                     borderRadius: RADIUS.md,
@@ -58,6 +60,7 @@ export default function AddItemForm({
                     fontSize: FONT_SIZES.body,
                     fontFamily: FONTS.body,
                     outline: "none",
+                    opacity: isCreating ? 0.6 : 1,
                 }}
             />
             <input
@@ -66,6 +69,7 @@ export default function AddItemForm({
                 value={newAmount}
                 onChange={e => onNewAmountChange(e.target.value)}
                 onKeyDown={handleKeyDown}
+                disabled={isCreating}
                 className="w-full md:flex-1 min-h-[44px] px-3 py-2"
                 style={{
                     borderRadius: RADIUS.md,
@@ -75,11 +79,13 @@ export default function AddItemForm({
                     fontSize: FONT_SIZES.body,
                     fontFamily: FONTS.body,
                     outline: "none",
+                    opacity: isCreating ? 0.6 : 1,
                 }}
             />
             <button
                 onClick={onAdd}
-                className="min-h-[44px] min-w-[44px] px-3.5 py-2 cursor-pointer"
+                disabled={isCreating}
+                className="min-h-[44px] min-w-[44px] px-3.5 py-2 cursor-pointer flex items-center justify-center"
                 style={{
                     borderRadius: RADIUS.md,
                     border: "none",
@@ -87,9 +93,10 @@ export default function AddItemForm({
                     color: COLORS.text,
                     fontWeight: FONT_WEIGHTS.semibold,
                     fontSize: FONT_SIZES.body,
+                    opacity: isCreating ? 0.7 : 1,
                 }}
             >
-                OK
+                {isCreating ? <Loader2 size={16} className="animate-spin" /> : "OK"}
             </button>
         </div>
     );

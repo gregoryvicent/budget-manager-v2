@@ -4,6 +4,7 @@ import { createIncomeEntry } from "@/backend/application/budgetManager/CreateInc
 import { PrismaIncomeEntryRepository } from "@/backend/adapters/db/prisma/budgetManager/PrismaIncomeEntryRepository";
 import { PrismaBudgetMonthRepository } from "@/backend/adapters/db/prisma/budgetManager/PrismaBudgetMonthRepository";
 import { requireAuth } from "@/lib/apiAuth";
+import { withIdempotency } from "@/lib/withIdempotency";
 
 const repo = new PrismaIncomeEntryRepository();
 const budgetRepo = new PrismaBudgetMonthRepository();
@@ -46,9 +47,11 @@ export async function GET(req: NextRequest) {
 
 /**
  * Creates an income entry, verifying ownership of the budget month.
+ * Supports idempotency via the Idempotency-Key header.
  */
 export async function POST(req: NextRequest) {
   try {
+    const idempotencyKey = req.headers.get("Idempotency-Key");
     const { userId } = await requireAuth();
     const body = await req.json();
     const { budgetMonthId, name, amount } = body as {
@@ -72,8 +75,14 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const entry = await createIncomeEntry(repo, { budgetMonthId, name, amount });
-    return NextResponse.json(entry, { status: 201 });
+    const { response } = await withIdempotency({
+      idempotencyKey,
+      handler: async () => {
+        const entry = await createIncomeEntry(repo, { budgetMonthId, name, amount });
+        return NextResponse.json(entry, { status: 201 });
+      },
+    });
+    return response;
   } catch (error: unknown) {
     if (typeof error === "object" && error !== null && "status" in error) {
       const e = error as { status: number; message: string };

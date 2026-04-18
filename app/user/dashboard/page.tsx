@@ -217,6 +217,9 @@ export default function BudgetDashboard() {
                     onAdd={incomeHook.add}
                     onUpdate={incomeHook.update}
                     onDelete={incomeHook.remove}
+                    isCreating={incomeHook.isCreating}
+                    isUpdating={incomeHook.isUpdating}
+                    isDeletingId={incomeHook.isDeletingId}
                 />
                 <EditableList
                     title="Gastos Fijos del Mes"
@@ -226,6 +229,9 @@ export default function BudgetDashboard() {
                     onAdd={fixedHook.add}
                     onUpdate={fixedHook.update}
                     onDelete={fixedHook.remove}
+                    isCreating={fixedHook.isCreating}
+                    isUpdating={fixedHook.isUpdating}
+                    isDeletingId={fixedHook.isDeletingId}
                 />
                 <EditableList
                     title="Gastos Variables del Mes"
@@ -235,6 +241,9 @@ export default function BudgetDashboard() {
                     onAdd={variableHook.add}
                     onUpdate={variableHook.update}
                     onDelete={variableHook.remove}
+                    isCreating={variableHook.isCreating}
+                    isUpdating={variableHook.isUpdating}
+                    isDeletingId={variableHook.isDeletingId}
                 />
             </div>
 
@@ -254,6 +263,8 @@ export default function BudgetDashboard() {
                         await goalSettings.upsert(goalId, pct, amount);
                         await savingsHook.reload();
                     }}
+                    isCreating={savingsHook.isCreating}
+                    isDeletingId={savingsHook.isDeletingId}
                 />
                 <GoalsList
                     title="Metas de Inversión"
@@ -269,6 +280,8 @@ export default function BudgetDashboard() {
                         await goalSettings.upsert(goalId, pct, amount);
                         await investmentHook.reload();
                     }}
+                    isCreating={investmentHook.isCreating}
+                    isDeletingId={investmentHook.isDeletingId}
                 />
                 <FinancialSummaryChart data={barData} totalIncome={totalIncome} />
                 <DistributionChart data={pieData} totalIncome={totalIncome} breakdownData={breakdownData} />

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, Trash2, Pencil, Check } from "lucide-react";
+import { Plus, Trash2, Pencil, Check, Loader2 } from "lucide-react";
 import SavingsCard from "@/components/SavingsCard";
 import { COLORS, FONTS, FONT_SIZES, FONT_WEIGHTS, RADIUS, TRANSITIONS } from "@/lib/theme";
 import type { SavingsGoalData } from "@/hooks/useSavingsGoals";
@@ -17,6 +17,10 @@ interface GoalsListProps {
     onUpdate: (id: string, data: { title?: string; goalAmount?: number }) => Promise<void>;
     onRemove: (id: string) => Promise<void>;
     onAllocationChange: (goalId: string, pct: number, amountContributed: number) => Promise<void>;
+    /** Whether a create operation is in progress. */
+    isCreating?: boolean;
+    /** ID of the goal currently being deleted, or null. */
+    isDeletingId?: string | null;
 }
 
 /**
@@ -28,6 +32,7 @@ interface GoalsListProps {
 export default function GoalsList({
     title, goals, color, icon, totalIncome,
     goalSettings, onAdd, onUpdate, onRemove, onAllocationChange,
+    isCreating = false, isDeletingId = null,
 }: GoalsListProps) {
     const [adding, setAdding]         = useState(false);
     const [newTitle, setNewTitle]      = useState("");
@@ -70,6 +75,7 @@ export default function GoalsList({
                 </span>
                 <button
                     onClick={() => setAdding(a => !a)}
+                    disabled={isCreating}
                     className="flex items-center gap-1.5 min-h-[44px] cursor-pointer"
                     style={{
                         background: "none", border: `1px solid ${color}44`,
@@ -77,11 +83,12 @@ export default function GoalsList({
                         color, fontSize: FONT_SIZES.cap,
                         fontFamily: FONTS.body, fontWeight: FONT_WEIGHTS.semibold,
                         transition: `background ${TRANSITIONS.fast}`,
+                        opacity: isCreating ? 0.7 : 1,
                     }}
                     onMouseEnter={e => (e.currentTarget.style.background = color + "18")}
                     onMouseLeave={e => (e.currentTarget.style.background = "none")}
                 >
-                    <Plus size={14} /> Nueva meta
+                    {isCreating ? <Loader2 size={14} className="animate-spin" /> : <Plus size={14} />} Nueva meta
                 </button>
             </div>
 
@@ -98,12 +105,13 @@ export default function GoalsList({
                         placeholder="Nombre de la meta"
                         value={newTitle}
                         onChange={e => setNewTitle(e.target.value)}
+                        disabled={isCreating}
                         className="w-full min-h-[44px]"
                         style={{
                             background: COLORS.bg, border: `1px solid ${COLORS.cardBorder}`,
                             borderRadius: RADIUS.md, padding: `8px 12px`,
                             color: COLORS.text, fontSize: FONT_SIZES.body, fontFamily: FONTS.body,
-                            outline: "none",
+                            outline: "none", opacity: isCreating ? 0.6 : 1,
                         }}
                     />
                     <input
@@ -111,29 +119,33 @@ export default function GoalsList({
                         type="number"
                         value={newAmount}
                         onChange={e => setNewAmount(e.target.value)}
+                        disabled={isCreating}
                         className="w-full min-h-[44px]"
                         style={{
                             background: COLORS.bg, border: `1px solid ${COLORS.cardBorder}`,
                             borderRadius: RADIUS.md, padding: `8px 12px`,
                             color: COLORS.text, fontSize: FONT_SIZES.body, fontFamily: FONTS.body,
-                            outline: "none",
+                            outline: "none", opacity: isCreating ? 0.6 : 1,
                         }}
                     />
                     <div className="flex gap-2">
                         <button
                             onClick={handleAdd}
-                            className="flex-1 min-h-[44px] cursor-pointer"
+                            disabled={isCreating}
+                            className="flex-1 min-h-[44px] cursor-pointer flex items-center justify-center gap-1.5"
                             style={{
                                 padding: `8px`,
                                 background: color, border: "none", borderRadius: RADIUS.md,
                                 color: COLORS.bg, fontWeight: FONT_WEIGHTS.semibold,
                                 fontSize: FONT_SIZES.body, fontFamily: FONTS.body,
+                                opacity: isCreating ? 0.7 : 1,
                             }}
                         >
-                            Crear
+                            {isCreating ? <Loader2 size={14} className="animate-spin" /> : "Crear"}
                         </button>
                         <button
                             onClick={() => { setAdding(false); setNewTitle(""); setNewAmount(""); }}
+                            disabled={isCreating}
                             className="min-h-[44px] cursor-pointer"
                             style={{
                                 padding: `8px 16px`,
@@ -218,7 +230,11 @@ export default function GoalsList({
                 }
 
                 return (
-                    <div key={g.id} className="w-full">
+                    <div key={g.id} className="w-full" style={{
+                        opacity: isDeletingId === g.id ? 0.5 : 1,
+                        pointerEvents: isDeletingId === g.id ? "none" : "auto",
+                        transition: `opacity ${TRANSITIONS.base}`,
+                    }}>
                         <SavingsCard
                             title={g.title}
                             saved={g.contributedUpTo}
@@ -252,6 +268,7 @@ export default function GoalsList({
                                     </button>
                                     <button
                                         onClick={() => onRemove(g.id)}
+                                        disabled={isDeletingId === g.id}
                                         aria-label={`Eliminar meta ${g.title}`}
                                         className="flex items-center gap-1.5 min-h-[44px] cursor-pointer"
                                         style={{
@@ -265,7 +282,7 @@ export default function GoalsList({
                                         onMouseEnter={e => (e.currentTarget.style.background = COLORS.deficit + "18")}
                                         onMouseLeave={e => (e.currentTarget.style.background = "none")}
                                     >
-                                        <Trash2 size={12} /> Eliminar
+                                        {isDeletingId === g.id ? <Loader2 size={12} className="animate-spin" /> : <Trash2 size={12} />} Eliminar
                                     </button>
                                 </>
                             }

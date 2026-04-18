@@ -3,6 +3,7 @@ import { getBudgetMonthById } from "@/backend/application/budgetManager/GetBudge
 import { deleteBudgetMonth } from "@/backend/application/budgetManager/DeleteBudgetMonth";
 import { PrismaBudgetMonthRepository } from "@/backend/adapters/db/prisma/budgetManager/PrismaBudgetMonthRepository";
 import { requireAuth } from "@/lib/apiAuth";
+import { withIdempotency } from "@/lib/withIdempotency";
 
 const repo = new PrismaBudgetMonthRepository();
 
@@ -38,9 +39,11 @@ export async function GET(_req: NextRequest, { params }: Params) {
 
 /**
  * Deletes a budget month by ID, verifying ownership.
+ * Supports idempotency via the Idempotency-Key header.
  */
-export async function DELETE(_req: NextRequest, { params }: Params) {
+export async function DELETE(req: NextRequest, { params }: Params) {
   try {
+    const idempotencyKey = req.headers.get("Idempotency-Key");
     const { userId } = await requireAuth();
     const { id } = await params;
     const budget = await getBudgetMonthById(repo, id);
@@ -52,8 +55,14 @@ export async function DELETE(_req: NextRequest, { params }: Params) {
       );
     }
 
-    const deleted = await deleteBudgetMonth(repo, id);
-    return NextResponse.json(deleted);
+    const { response } = await withIdempotency({
+      idempotencyKey,
+      handler: async () => {
+        const deleted = await deleteBudgetMonth(repo, id);
+        return NextResponse.json(deleted);
+      },
+    });
+    return response;
   } catch (error: unknown) {
     if (typeof error === "object" && error !== null && "status" in error) {
       const e = error as { status: number; message: string };

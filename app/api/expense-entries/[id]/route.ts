@@ -4,6 +4,7 @@ import { deleteExpenseEntry } from "@/backend/application/budgetManager/DeleteEx
 import { PrismaExpenseEntryRepository } from "@/backend/adapters/db/prisma/budgetManager/PrismaExpenseEntryRepository";
 import { PrismaBudgetMonthRepository } from "@/backend/adapters/db/prisma/budgetManager/PrismaBudgetMonthRepository";
 import { requireAuth } from "@/lib/apiAuth";
+import { withIdempotency } from "@/lib/withIdempotency";
 
 const repo = new PrismaExpenseEntryRepository();
 const budgetRepo = new PrismaBudgetMonthRepository();
@@ -12,9 +13,11 @@ type Params = { params: Promise<{ id: string }> };
 
 /**
  * Updates an expense entry by ID, verifying ownership via budget month.
+ * Supports idempotency via the Idempotency-Key header.
  */
 export async function PATCH(req: NextRequest, { params }: Params) {
   try {
+    const idempotencyKey = req.headers.get("Idempotency-Key");
     const { userId } = await requireAuth();
     const { id } = await params;
 
@@ -36,8 +39,15 @@ export async function PATCH(req: NextRequest, { params }: Params) {
 
     const body = await req.json();
     const { name, amount } = body as { name?: string; amount?: number };
-    const updated = await updateExpenseEntry(repo, id, { name, amount });
-    return NextResponse.json(updated);
+
+    const { response } = await withIdempotency({
+      idempotencyKey,
+      handler: async () => {
+        const updated = await updateExpenseEntry(repo, id, { name, amount });
+        return NextResponse.json(updated);
+      },
+    });
+    return response;
   } catch (error: unknown) {
     if (typeof error === "object" && error !== null && "status" in error) {
       const e = error as { status: number; message: string };
@@ -51,9 +61,11 @@ export async function PATCH(req: NextRequest, { params }: Params) {
 
 /**
  * Deletes an expense entry by ID, verifying ownership via budget month.
+ * Supports idempotency via the Idempotency-Key header.
  */
-export async function DELETE(_req: NextRequest, { params }: Params) {
+export async function DELETE(req: NextRequest, { params }: Params) {
   try {
+    const idempotencyKey = req.headers.get("Idempotency-Key");
     const { userId } = await requireAuth();
     const { id } = await params;
 
@@ -73,8 +85,14 @@ export async function DELETE(_req: NextRequest, { params }: Params) {
       );
     }
 
-    const deleted = await deleteExpenseEntry(repo, id);
-    return NextResponse.json(deleted);
+    const { response } = await withIdempotency({
+      idempotencyKey,
+      handler: async () => {
+        const deleted = await deleteExpenseEntry(repo, id);
+        return NextResponse.json(deleted);
+      },
+    });
+    return response;
   } catch (error: unknown) {
     if (typeof error === "object" && error !== null && "status" in error) {
       const e = error as { status: number; message: string };

@@ -1,6 +1,8 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useContext } from "react";
+import { generateIdempotencyKey } from "@/lib/idempotency";
+import { AlertContext } from "@/contexts/AlertContext";
 
 export type GoalType = "SAVINGS" | "INVESTMENT";
 
@@ -18,6 +20,9 @@ interface UseSavingsGoalsState {
     goals: SavingsGoalData[];
     loading: boolean;
     error: string | null;
+    isCreating: boolean;
+    isUpdating: boolean;
+    isDeletingId: string | null;
     add: (title: string, goalAmount: number) => Promise<void>;
     update: (id: string, data: { title?: string; goalAmount?: number }) => Promise<void>;
     remove: (id: string) => Promise<void>;
@@ -34,9 +39,13 @@ interface UseSavingsGoalsState {
  * @returns {UseSavingsGoalsState} Goals list and CRUD handlers.
  */
 export const useSavingsGoals = (type: GoalType, year: number, month: number): UseSavingsGoalsState => {
-    const [goals, setGoals]     = useState<SavingsGoalData[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError]     = useState<string | null>(null);
+    const [goals, setGoals]           = useState<SavingsGoalData[]>([]);
+    const [loading, setLoading]       = useState(true);
+    const [error, setError]           = useState<string | null>(null);
+    const [isCreating, setIsCreating] = useState(false);
+    const [isUpdating, setIsUpdating] = useState(false);
+    const [isDeletingId, setIsDeletingId] = useState<string | null>(null);
+    const alertCtx = useContext(AlertContext);
 
     const load = useCallback(async () => {
         setLoading(true);
@@ -67,39 +76,78 @@ export const useSavingsGoals = (type: GoalType, year: number, month: number): Us
     useEffect(() => { load(); }, [load]);
 
     const add = async (title: string, goalAmount: number) => {
-        const res = await fetch("/api/savings-goals", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ type, title, goalAmount, year, month }),
-        });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error);
-        setGoals(prev => [...prev, { ...data, contributedUpTo: 0 }]);
+        if (isCreating) return;
+        setIsCreating(true);
+        try {
+            const res = await fetch("/api/savings-goals", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Idempotency-Key": generateIdempotencyKey(),
+                },
+                body: JSON.stringify({ type, title, goalAmount, year, month }),
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error);
+            setGoals(prev => [...prev, { ...data, contributedUpTo: 0 }]);
+            alertCtx?.addAlert({ variant: "success", message: `Meta "${title}" creada correctamente.` });
+        } catch (err) {
+            const msg = err instanceof Error ? err.message : "Error al crear meta.";
+            alertCtx?.addAlert({ variant: "error", message: msg });
+        } finally {
+            setIsCreating(false);
+        }
     };
 
     const update = async (id: string, data: { title?: string; goalAmount?: number }) => {
-        const res = await fetch(`/api/savings-goals/${id}`, {
-            method: "PATCH",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(data),
-        });
-        const updated = await res.json();
-        if (!res.ok) throw new Error(updated.error);
-        setGoals(prev => prev.map(g => g.id === id ? { ...g, ...updated } : g));
+        if (isUpdating) return;
+        setIsUpdating(true);
+        try {
+            const res = await fetch(`/api/savings-goals/${id}`, {
+                method: "PATCH",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Idempotency-Key": generateIdempotencyKey(),
+                },
+                body: JSON.stringify(data),
+            });
+            const updated = await res.json();
+            if (!res.ok) throw new Error(updated.error);
+            setGoals(prev => prev.map(g => g.id === id ? { ...g, ...updated } : g));
+            alertCtx?.addAlert({ variant: "success", message: "Meta actualizada correctamente." });
+        } catch (err) {
+            const msg = err instanceof Error ? err.message : "Error al actualizar meta.";
+            alertCtx?.addAlert({ variant: "error", message: msg });
+        } finally {
+            setIsUpdating(false);
+        }
     };
 
     const remove = async (id: string) => {
-        const res = await fetch(`/api/savings-goals/${id}`, {
-            method: "DELETE",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ year, month }),
-        });
-        if (!res.ok) {
-            const data = await res.json();
-            throw new Error(data.error);
+        if (isDeletingId) return;
+        setIsDeletingId(id);
+        try {
+            const res = await fetch(`/api/savings-goals/${id}`, {
+                method: "DELETE",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Idempotency-Key": generateIdempotencyKey(),
+                },
+                body: JSON.stringify({ year, month }),
+            });
+            if (!res.ok) {
+                const data = await res.json();
+                throw new Error(data.error);
+            }
+            setGoals(prev => prev.filter(g => g.id !== id));
+            alertCtx?.addAlert({ variant: "success", message: "Meta eliminada correctamente." });
+        } catch (err) {
+            const msg = err instanceof Error ? err.message : "Error al eliminar meta.";
+            alertCtx?.addAlert({ variant: "error", message: msg });
+        } finally {
+            setIsDeletingId(null);
         }
-        setGoals(prev => prev.filter(g => g.id !== id));
     };
 
-    return { goals, loading, error, add, update, remove, reload: load };
+    return { goals, loading, error, isCreating, isUpdating, isDeletingId, add, update, remove, reload: load };
 };

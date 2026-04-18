@@ -5,6 +5,7 @@ import { PrismaGoalMonthSettingRepository } from "@/backend/adapters/db/prisma/b
 import { PrismaBudgetMonthRepository } from "@/backend/adapters/db/prisma/budgetManager/PrismaBudgetMonthRepository";
 import { PrismaSavingsGoalRepository } from "@/backend/adapters/db/prisma/budgetManager/PrismaSavingsGoalRepository";
 import { requireAuth } from "@/lib/apiAuth";
+import { withIdempotency } from "@/lib/withIdempotency";
 
 const repo = new PrismaGoalMonthSettingRepository();
 const budgetRepo = new PrismaBudgetMonthRepository();
@@ -57,9 +58,11 @@ export async function GET(req: NextRequest) {
 
 /**
  * Upserts a goal month setting, verifying ownership of both budget month and savings goal.
+ * Supports idempotency via the Idempotency-Key header.
  */
 export async function POST(req: NextRequest) {
   try {
+    const idempotencyKey = req.headers.get("Idempotency-Key");
     const { userId } = await requireAuth();
     const body = await req.json();
     const { savingsGoalId, budgetMonthId, allocationPct, amountContributed } = body as {
@@ -94,8 +97,14 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const setting = await upsertGoalMonthSetting(repo, goalRepo, savingsGoalId, budgetMonthId, allocationPct, amountContributed);
-    return NextResponse.json(setting);
+    const { response } = await withIdempotency({
+      idempotencyKey,
+      handler: async () => {
+        const setting = await upsertGoalMonthSetting(repo, goalRepo, savingsGoalId, budgetMonthId, allocationPct, amountContributed);
+        return NextResponse.json(setting);
+      },
+    });
+    return response;
   } catch (error: unknown) {
     if (typeof error === "object" && error !== null && "status" in error) {
       const e = error as { status: number; message: string };

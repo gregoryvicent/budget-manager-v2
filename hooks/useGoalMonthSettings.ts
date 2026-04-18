@@ -1,6 +1,8 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useContext } from "react";
+import { generateIdempotencyKey } from "@/lib/idempotency";
+import { AlertContext } from "@/contexts/AlertContext";
 
 interface GoalSetting {
     savingsGoalId: string;
@@ -11,6 +13,7 @@ interface UseGoalMonthSettingsState {
     settings: Map<string, number>;
     loading: boolean;
     error: string | null;
+    isUpserting: boolean;
     upsert: (savingsGoalId: string, allocationPct: number, amountContributed?: number | null) => Promise<void>;
 }
 
@@ -24,9 +27,11 @@ interface UseGoalMonthSettingsState {
 export const useGoalMonthSettings = (
     budgetMonthId: string | null,
 ): UseGoalMonthSettingsState => {
-    const [settings, setSettings] = useState<Map<string, number>>(new Map());
-    const [loading, setLoading]   = useState(false);
-    const [error, setError]       = useState<string | null>(null);
+    const [settings, setSettings]     = useState<Map<string, number>>(new Map());
+    const [loading, setLoading]       = useState(false);
+    const [error, setError]           = useState<string | null>(null);
+    const [isUpserting, setIsUpserting] = useState(false);
+    const alertCtx = useContext(AlertContext);
 
     const load = useCallback(async () => {
         if (!budgetMonthId) return;
@@ -48,18 +53,30 @@ export const useGoalMonthSettings = (
     useEffect(() => { load(); }, [load]);
 
     const upsert = async (savingsGoalId: string, allocationPct: number, amountContributed?: number | null) => {
-        if (!budgetMonthId) return;
-        setSettings(prev => new Map(prev).set(savingsGoalId, allocationPct));
-        const body: Record<string, unknown> = { savingsGoalId, budgetMonthId, allocationPct };
-        if (amountContributed !== undefined) body.amountContributed = amountContributed;
-        const res = await fetch("/api/goal-month-settings", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(body),
-        });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error);
+        if (!budgetMonthId || isUpserting) return;
+        setIsUpserting(true);
+        try {
+            setSettings(prev => new Map(prev).set(savingsGoalId, allocationPct));
+            const body: Record<string, unknown> = { savingsGoalId, budgetMonthId, allocationPct };
+            if (amountContributed !== undefined) body.amountContributed = amountContributed;
+            const res = await fetch("/api/goal-month-settings", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Idempotency-Key": generateIdempotencyKey(),
+                },
+                body: JSON.stringify(body),
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error);
+            alertCtx?.addAlert({ variant: "success", message: "Configuración de meta actualizada." });
+        } catch (err) {
+            const msg = err instanceof Error ? err.message : "Error al actualizar configuración.";
+            alertCtx?.addAlert({ variant: "error", message: msg });
+        } finally {
+            setIsUpserting(false);
+        }
     };
 
-    return { settings, loading, error, upsert };
+    return { settings, loading, error, isUpserting, upsert };
 };

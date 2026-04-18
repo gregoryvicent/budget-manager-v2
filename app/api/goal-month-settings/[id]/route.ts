@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { PrismaGoalMonthSettingRepository } from "@/backend/adapters/db/prisma/budgetManager/PrismaGoalMonthSettingRepository";
 import { PrismaBudgetMonthRepository } from "@/backend/adapters/db/prisma/budgetManager/PrismaBudgetMonthRepository";
 import { requireAuth } from "@/lib/apiAuth";
+import { withIdempotency } from "@/lib/withIdempotency";
 
 const repo = new PrismaGoalMonthSettingRepository();
 const budgetRepo = new PrismaBudgetMonthRepository();
@@ -10,9 +11,11 @@ type Params = { params: Promise<{ id: string }> };
 
 /**
  * Updates a goal month setting by ID, verifying ownership via budget month.
+ * Supports idempotency via the Idempotency-Key header.
  */
 export async function PATCH(req: NextRequest, { params }: Params) {
   try {
+    const idempotencyKey = req.headers.get("Idempotency-Key");
     const { userId } = await requireAuth();
     const { id } = await params;
 
@@ -39,8 +42,14 @@ export async function PATCH(req: NextRequest, { params }: Params) {
       amountContributed?: number | null;
     };
 
-    const setting = await repo.update(id, { allocationPct, amountContributed });
-    return NextResponse.json(setting);
+    const { response } = await withIdempotency({
+      idempotencyKey,
+      handler: async () => {
+        const setting = await repo.update(id, { allocationPct, amountContributed });
+        return NextResponse.json(setting);
+      },
+    });
+    return response;
   } catch (error: unknown) {
     if (typeof error === "object" && error !== null && "status" in error) {
       const e = error as { status: number; message: string };
