@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useContext } from "react";
 import { type ListItem } from "@/lib/types";
 import { generateIdempotencyKey } from "@/lib/idempotency";
 import { AlertContext } from "@/contexts/AlertContext";
+import { CacheContext } from "@/contexts/CacheContext";
 
 export type ExpenseType = "FIXED" | "VARIABLE";
 
@@ -35,13 +36,15 @@ export const useExpenseEntries = (budgetMonthId: string | null, type: ExpenseTyp
     const [isUpdating, setIsUpdating] = useState(false);
     const [isDeletingId, setIsDeletingId] = useState<string | null>(null);
     const alertCtx = useContext(AlertContext);
+    const cacheCtx = useContext(CacheContext);
+    const fetchFn = cacheCtx?.cachedFetch ?? fetch;
 
     const load = useCallback(async () => {
         if (!budgetMonthId) return;
         setLoading(true);
         setError(null);
         try {
-            const res = await fetch(`/api/expense-entries?budgetMonthId=${budgetMonthId}&type=${type}`);
+            const res = await fetchFn(`/api/expense-entries?budgetMonthId=${budgetMonthId}&type=${type}`);
             const data = await res.json();
             if (!res.ok) throw new Error(data.error);
             setExpenses(data);
@@ -50,7 +53,7 @@ export const useExpenseEntries = (budgetMonthId: string | null, type: ExpenseTyp
         } finally {
             setLoading(false);
         }
-    }, [budgetMonthId, type]);
+    }, [budgetMonthId, type, fetchFn]);
 
     useEffect(() => { load(); }, [load]);
 
@@ -58,7 +61,7 @@ export const useExpenseEntries = (budgetMonthId: string | null, type: ExpenseTyp
         if (isCreating) return;
         setIsCreating(true);
         try {
-            const res = await fetch("/api/expense-entries", {
+            const res = await fetchFn("/api/expense-entries", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -82,7 +85,7 @@ export const useExpenseEntries = (budgetMonthId: string | null, type: ExpenseTyp
         if (isUpdating) return;
         setIsUpdating(true);
         try {
-            const res = await fetch(`/api/expense-entries/${id}`, {
+            const res = await fetchFn(`/api/expense-entries/${id}`, {
                 method: "PATCH",
                 headers: {
                     "Content-Type": "application/json",
@@ -106,7 +109,7 @@ export const useExpenseEntries = (budgetMonthId: string | null, type: ExpenseTyp
         if (isDeletingId) return;
         setIsDeletingId(id);
         try {
-            const res = await fetch(`/api/expense-entries/${id}`, {
+            const res = await fetchFn(`/api/expense-entries/${id}`, {
                 method: "DELETE",
                 headers: { "Idempotency-Key": generateIdempotencyKey() },
             });

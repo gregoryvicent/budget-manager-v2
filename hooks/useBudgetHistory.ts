@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useContext } from "react";
 import { buildHistoryChartData } from "@/lib/buildHistoryChartData";
 import type { MonthlySummary, HistoryChartEntry } from "@/lib/types/budgetHistory";
+import { CacheContext } from "@/contexts/CacheContext";
 
 interface UseBudgetHistoryState {
   chartData: HistoryChartEntry[];
@@ -24,6 +25,8 @@ export function useBudgetHistory(year: number): UseBudgetHistoryState {
   const [availableYears, setAvailableYears] = useState<number[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const cacheCtx = useContext(CacheContext);
+  const fetchFn = cacheCtx?.cachedFetch ?? fetch;
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -31,8 +34,8 @@ export function useBudgetHistory(year: number): UseBudgetHistoryState {
     try {
       // Fetch history and all budgets in parallel
       const [historyRes, budgetsRes] = await Promise.all([
-        fetch(`/api/budgets/history?year=${year}`),
-        fetch("/api/budgets"),
+        fetchFn(`/api/budgets/history?year=${year}`),
+        fetchFn("/api/budgets"),
       ]);
 
       if (!historyRes.ok) {
@@ -54,7 +57,7 @@ export function useBudgetHistory(year: number): UseBudgetHistoryState {
     } finally {
       setLoading(false);
     }
-  }, [year]);
+  }, [year, fetchFn]);
 
   useEffect(() => {
     load();

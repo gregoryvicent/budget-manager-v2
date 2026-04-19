@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useContext } from "react";
 import { type ListItem } from "@/lib/types";
 import { generateIdempotencyKey } from "@/lib/idempotency";
 import { AlertContext } from "@/contexts/AlertContext";
+import { CacheContext } from "@/contexts/CacheContext";
 
 interface IncomeEntriesState {
     incomes: ListItem[];
@@ -32,13 +33,15 @@ export const useIncomeEntries = (budgetMonthId: string | null): IncomeEntriesSta
     const [isUpdating, setIsUpdating] = useState(false);
     const [isDeletingId, setIsDeletingId] = useState<string | null>(null);
     const alertCtx = useContext(AlertContext);
+    const cacheCtx = useContext(CacheContext);
+    const fetchFn = cacheCtx?.cachedFetch ?? fetch;
 
     const load = useCallback(async () => {
         if (!budgetMonthId) return;
         setLoading(true);
         setError(null);
         try {
-            const res = await fetch(`/api/income-entries?budgetMonthId=${budgetMonthId}`);
+            const res = await fetchFn(`/api/income-entries?budgetMonthId=${budgetMonthId}`);
             const data = await res.json();
             if (!res.ok) throw new Error(data.error);
             setIncomes(data);
@@ -47,7 +50,7 @@ export const useIncomeEntries = (budgetMonthId: string | null): IncomeEntriesSta
         } finally {
             setLoading(false);
         }
-    }, [budgetMonthId]);
+    }, [budgetMonthId, fetchFn]);
 
     useEffect(() => { load(); }, [load]);
 
@@ -55,7 +58,7 @@ export const useIncomeEntries = (budgetMonthId: string | null): IncomeEntriesSta
         if (isCreating) return;
         setIsCreating(true);
         try {
-            const res = await fetch("/api/income-entries", {
+            const res = await fetchFn("/api/income-entries", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -79,7 +82,7 @@ export const useIncomeEntries = (budgetMonthId: string | null): IncomeEntriesSta
         if (isUpdating) return;
         setIsUpdating(true);
         try {
-            const res = await fetch(`/api/income-entries/${id}`, {
+            const res = await fetchFn(`/api/income-entries/${id}`, {
                 method: "PATCH",
                 headers: {
                     "Content-Type": "application/json",
@@ -103,7 +106,7 @@ export const useIncomeEntries = (budgetMonthId: string | null): IncomeEntriesSta
         if (isDeletingId) return;
         setIsDeletingId(id);
         try {
-            const res = await fetch(`/api/income-entries/${id}`, {
+            const res = await fetchFn(`/api/income-entries/${id}`, {
                 method: "DELETE",
                 headers: { "Idempotency-Key": generateIdempotencyKey() },
             });

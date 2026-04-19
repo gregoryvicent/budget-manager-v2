@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useContext } from "react";
 import { generateIdempotencyKey } from "@/lib/idempotency";
 import { AlertContext } from "@/contexts/AlertContext";
+import { CacheContext } from "@/contexts/CacheContext";
 
 export type GoalType = "SAVINGS" | "INVESTMENT";
 
@@ -46,19 +47,21 @@ export const useSavingsGoals = (type: GoalType, year: number, month: number): Us
     const [isUpdating, setIsUpdating] = useState(false);
     const [isDeletingId, setIsDeletingId] = useState<string | null>(null);
     const alertCtx = useContext(AlertContext);
+    const cacheCtx = useContext(CacheContext);
+    const fetchFn = cacheCtx?.cachedFetch ?? fetch;
 
     const load = useCallback(async () => {
         setLoading(true);
         setError(null);
         try {
-            const res = await fetch(`/api/savings-goals?type=${type}&year=${year}&month=${month}`);
+            const res = await fetchFn(`/api/savings-goals?type=${type}&year=${year}&month=${month}`);
             const list = await res.json();
             if (!res.ok) throw new Error(list.error);
 
             // Fetch contributedUpTo for each goal in parallel.
             const enriched: SavingsGoalData[] = await Promise.all(
                 list.map(async (g: SavingsGoalData) => {
-                    const detailRes = await fetch(
+                    const detailRes = await fetchFn(
                         `/api/savings-goals/${g.id}?year=${year}&month=${month}`,
                     );
                     const detail = await detailRes.json();
@@ -71,7 +74,7 @@ export const useSavingsGoals = (type: GoalType, year: number, month: number): Us
         } finally {
             setLoading(false);
         }
-    }, [type, year, month]);
+    }, [type, year, month, fetchFn]);
 
     useEffect(() => { load(); }, [load]);
 
@@ -79,7 +82,7 @@ export const useSavingsGoals = (type: GoalType, year: number, month: number): Us
         if (isCreating) return;
         setIsCreating(true);
         try {
-            const res = await fetch("/api/savings-goals", {
+            const res = await fetchFn("/api/savings-goals", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -103,7 +106,7 @@ export const useSavingsGoals = (type: GoalType, year: number, month: number): Us
         if (isUpdating) return;
         setIsUpdating(true);
         try {
-            const res = await fetch(`/api/savings-goals/${id}`, {
+            const res = await fetchFn(`/api/savings-goals/${id}`, {
                 method: "PATCH",
                 headers: {
                     "Content-Type": "application/json",
@@ -127,7 +130,7 @@ export const useSavingsGoals = (type: GoalType, year: number, month: number): Us
         if (isDeletingId) return;
         setIsDeletingId(id);
         try {
-            const res = await fetch(`/api/savings-goals/${id}`, {
+            const res = await fetchFn(`/api/savings-goals/${id}`, {
                 method: "DELETE",
                 headers: {
                     "Content-Type": "application/json",

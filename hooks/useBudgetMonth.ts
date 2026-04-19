@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useContext } from "react";
+import { CacheContext } from "@/contexts/CacheContext";
 
 interface BudgetMonthState {
     budgetMonthId: string | null;
@@ -21,13 +22,15 @@ export const useBudgetMonth = (year: number, month: number): BudgetMonthState =>
     const [budgetMonthId, setBudgetMonthId] = useState<string | null>(null);
     const [loading, setLoading]             = useState(true);
     const [error, setError]                 = useState<string | null>(null);
+    const cacheCtx = useContext(CacheContext);
+    const fetchFn = cacheCtx?.cachedFetch ?? fetch;
 
     const load = useCallback(async () => {
         setLoading(true);
         setError(null);
         setBudgetMonthId(null);
         try {
-            const res = await fetch("/api/budgets/get-or-create", {
+            const res = await fetchFn("/api/budgets/get-or-create", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ year, month }),
@@ -40,7 +43,7 @@ export const useBudgetMonth = (year: number, month: number): BudgetMonthState =>
         } finally {
             setLoading(false);
         }
-    }, [year, month]);
+    }, [year, month, fetchFn]);
 
     useEffect(() => { load(); }, [load]);
 

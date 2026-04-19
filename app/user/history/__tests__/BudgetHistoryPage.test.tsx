@@ -44,9 +44,11 @@ vi.mock("@/components/YearFilter", () => ({
 vi.mock("lucide-react", () => ({
   ArrowLeft: () => <span data-testid="icon-arrow-left" />,
   BarChart3: () => <span data-testid="icon-bar-chart" />,
-  RefreshCw: ({ className }: { className?: string }) => (
-    <span data-testid="icon-refresh" className={className} />
-  ),
+}));
+
+// Mock HistoryPageSkeleton
+vi.mock("@/components/HistoryPageSkeleton", () => ({
+  default: () => <div data-testid="history-page-skeleton" />,
 }));
 
 import BudgetHistoryPage from "../page";
@@ -102,7 +104,7 @@ describe("BudgetHistoryPage", () => {
   });
 
   // Req 7.1: Loading indicator is displayed while data is loading
-  it("shows a loading indicator when data is loading", () => {
+  it("shows a skeleton when loading with no cached data", () => {
     mockUseBudgetHistory.mockReturnValue({
       chartData: [],
       availableYears: [],
@@ -115,11 +117,11 @@ describe("BudgetHistoryPage", () => {
 
     const loadingStatus = screen.getByRole("status");
     expect(loadingStatus).toBeTruthy();
-    expect(screen.getByText("Cargando historial…")).toBeTruthy();
+    expect(screen.getByTestId("history-page-skeleton")).toBeTruthy();
   });
 
-  // Req 7.1: Chart is not rendered while loading
-  it("does not render the chart while loading", () => {
+  // Req 6.2: Chart renders with cached data even while loading
+  it("renders the chart with cached data while loading", () => {
     mockUseBudgetHistory.mockReturnValue({
       chartData: chartDataWithValues,
       availableYears: [2025],
@@ -130,7 +132,8 @@ describe("BudgetHistoryPage", () => {
 
     render(<BudgetHistoryPage />);
 
-    expect(screen.queryByTestId("history-bar-chart")).toBeNull();
+    expect(screen.getByTestId("history-bar-chart")).toBeTruthy();
+    expect(screen.queryByTestId("history-page-skeleton")).toBeNull();
   });
 
   // Req 7.2: Error message is displayed when API fails

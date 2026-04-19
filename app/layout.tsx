@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import SessionProvider from "@/components/Providers/SessionProvider";
 import { AlertProvider } from "@/contexts/AlertContext";
+import { CacheProvider } from "@/contexts/CacheContext";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -31,7 +32,9 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <SessionProvider>
-          <AlertProvider>{children}</AlertProvider>
+          <AlertProvider>
+            <CacheProvider>{children}</CacheProvider>
+          </AlertProvider>
         </SessionProvider>
       </body>
     </html>

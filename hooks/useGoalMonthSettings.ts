@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useContext } from "react";
 import { generateIdempotencyKey } from "@/lib/idempotency";
 import { AlertContext } from "@/contexts/AlertContext";
+import { CacheContext } from "@/contexts/CacheContext";
 
 interface GoalSetting {
     savingsGoalId: string;
@@ -32,13 +33,15 @@ export const useGoalMonthSettings = (
     const [error, setError]           = useState<string | null>(null);
     const [isUpserting, setIsUpserting] = useState(false);
     const alertCtx = useContext(AlertContext);
+    const cacheCtx = useContext(CacheContext);
+    const fetchFn = cacheCtx?.cachedFetch ?? fetch;
 
     const load = useCallback(async () => {
         if (!budgetMonthId) return;
         setLoading(true);
         setError(null);
         try {
-            const res = await fetch(`/api/goal-month-settings?budgetMonthId=${budgetMonthId}`);
+            const res = await fetchFn(`/api/goal-month-settings?budgetMonthId=${budgetMonthId}`);
             const data: GoalSetting[] = await res.json();
             const map = new Map<string, number>();
             data.forEach(s => map.set(s.savingsGoalId, s.allocationPct));
@@ -48,7 +51,7 @@ export const useGoalMonthSettings = (
         } finally {
             setLoading(false);
         }
-    }, [budgetMonthId]);
+    }, [budgetMonthId, fetchFn]);
 
     useEffect(() => { load(); }, [load]);
 
@@ -59,7 +62,7 @@ export const useGoalMonthSettings = (
             setSettings(prev => new Map(prev).set(savingsGoalId, allocationPct));
             const body: Record<string, unknown> = { savingsGoalId, budgetMonthId, allocationPct };
             if (amountContributed !== undefined) body.amountContributed = amountContributed;
-            const res = await fetch("/api/goal-month-settings", {
+            const res = await fetchFn("/api/goal-month-settings", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",

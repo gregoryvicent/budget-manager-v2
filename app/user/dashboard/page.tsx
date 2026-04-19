@@ -6,10 +6,14 @@ import { TrendingUp, TrendingDown, DollarSign, Shield } from "lucide-react";
 
 import AnimatedNumber from "@/components/AnimatedNumber";
 import EditableList from "@/components/EditableList";
+import EditableListSkeleton from "@/components/EditableList/EditableListSkeleton";
 import MetricCard from "@/components/MetricCard";
+import MetricCardSkeleton from "@/components/MetricCard/MetricCardSkeleton";
 import GoalsList from "@/components/GoalsList";
+import GoalsListSkeleton from "@/components/GoalsList/GoalsListSkeleton";
 import FinancialSummaryChart from "@/components/FinancialSummaryChart";
 import DistributionChart from "@/components/DistributionChart";
+import ChartSkeleton from "@/components/Charts/ChartSkeleton";
 import Sidebar from "@/components/Sidebar";
 import DashboardHeader from "@/components/DashboardHeader";
 import { useBudgetCalculations } from "@/hooks/useBudgetCalculations";
@@ -182,109 +186,147 @@ export default function BudgetDashboard() {
 
             {/* KPI Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-                <MetricCard
-                    label="Ingresos Totales"
-                    value={<AnimatedNumber value={totalIncome} />}
-                    color={COLORS.income}
-                    icon={TrendingUp}
-                    subtitle="Este mes"
-                />
-                <MetricCard
-                    label="Gastos Totales"
-                    value={<AnimatedNumber value={totalExpenses} />}
-                    color={COLORS.variable}
-                    icon={TrendingDown}
-                    subtitle={`${totalExpPct.toFixed(1)}% del ingreso`}
-                    trend="down"
-                />
-                <MetricCard
-                    label="Disponible"
-                    value={<AnimatedNumber value={afterExpenses} />}
-                    color={COLORS.accent}
-                    icon={DollarSign}
-                    subtitle={`${freePct.toFixed(1)}% libre`}
-                    trend={afterExpenses >= 0 ? "up" : "down"}
-                />
+                {(incomeHook.loading || !budgetMonthId) && incomeHook.incomes.length === 0 ? (
+                    <>
+                        <MetricCardSkeleton />
+                        <MetricCardSkeleton />
+                        <MetricCardSkeleton />
+                    </>
+                ) : (
+                    <>
+                        <MetricCard
+                            label="Ingresos Totales"
+                            value={<AnimatedNumber value={totalIncome} />}
+                            color={COLORS.income}
+                            icon={TrendingUp}
+                            subtitle="Este mes"
+                        />
+                        <MetricCard
+                            label="Gastos Totales"
+                            value={<AnimatedNumber value={totalExpenses} />}
+                            color={COLORS.variable}
+                            icon={TrendingDown}
+                            subtitle={`${totalExpPct.toFixed(1)}% del ingreso`}
+                            trend="down"
+                        />
+                        <MetricCard
+                            label="Disponible"
+                            value={<AnimatedNumber value={afterExpenses} />}
+                            color={COLORS.accent}
+                            icon={DollarSign}
+                            subtitle={`${freePct.toFixed(1)}% libre`}
+                            trend={afterExpenses >= 0 ? "up" : "down"}
+                        />
+                    </>
+                )}
             </div>
 
             {/* Editable lists */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-                <EditableList
-                    title="Fuentes de Ingresos"
-                    items={incomeHook.incomes}
-                    color={COLORS.income}
-                    icon={TrendingUp}
-                    onAdd={incomeHook.add}
-                    onUpdate={incomeHook.update}
-                    onDelete={incomeHook.remove}
-                    isCreating={incomeHook.isCreating}
-                    isUpdating={incomeHook.isUpdating}
-                    isDeletingId={incomeHook.isDeletingId}
-                />
-                <EditableList
-                    title="Gastos Fijos del Mes"
-                    items={fixedHook.expenses}
-                    color={COLORS.fixed}
-                    icon={TrendingDown}
-                    onAdd={fixedHook.add}
-                    onUpdate={fixedHook.update}
-                    onDelete={fixedHook.remove}
-                    isCreating={fixedHook.isCreating}
-                    isUpdating={fixedHook.isUpdating}
-                    isDeletingId={fixedHook.isDeletingId}
-                />
-                <EditableList
-                    title="Gastos Variables del Mes"
-                    items={variableHook.expenses}
-                    color={COLORS.variable}
-                    icon={TrendingDown}
-                    onAdd={variableHook.add}
-                    onUpdate={variableHook.update}
-                    onDelete={variableHook.remove}
-                    isCreating={variableHook.isCreating}
-                    isUpdating={variableHook.isUpdating}
-                    isDeletingId={variableHook.isDeletingId}
-                />
+                {(incomeHook.loading || !budgetMonthId) && incomeHook.incomes.length === 0 ? (
+                    <EditableListSkeleton />
+                ) : (
+                    <EditableList
+                        title="Fuentes de Ingresos"
+                        items={incomeHook.incomes}
+                        color={COLORS.income}
+                        icon={TrendingUp}
+                        onAdd={incomeHook.add}
+                        onUpdate={incomeHook.update}
+                        onDelete={incomeHook.remove}
+                        isCreating={incomeHook.isCreating}
+                        isUpdating={incomeHook.isUpdating}
+                        isDeletingId={incomeHook.isDeletingId}
+                    />
+                )}
+                {(fixedHook.loading || !budgetMonthId) && fixedHook.expenses.length === 0 ? (
+                    <EditableListSkeleton />
+                ) : (
+                    <EditableList
+                        title="Gastos Fijos del Mes"
+                        items={fixedHook.expenses}
+                        color={COLORS.fixed}
+                        icon={TrendingDown}
+                        onAdd={fixedHook.add}
+                        onUpdate={fixedHook.update}
+                        onDelete={fixedHook.remove}
+                        isCreating={fixedHook.isCreating}
+                        isUpdating={fixedHook.isUpdating}
+                        isDeletingId={fixedHook.isDeletingId}
+                    />
+                )}
+                {(variableHook.loading || !budgetMonthId) && variableHook.expenses.length === 0 ? (
+                    <EditableListSkeleton />
+                ) : (
+                    <EditableList
+                        title="Gastos Variables del Mes"
+                        items={variableHook.expenses}
+                        color={COLORS.variable}
+                        icon={TrendingDown}
+                        onAdd={variableHook.add}
+                        onUpdate={variableHook.update}
+                        onDelete={variableHook.remove}
+                        isCreating={variableHook.isCreating}
+                        isUpdating={variableHook.isUpdating}
+                        isDeletingId={variableHook.isDeletingId}
+                    />
+                )}
             </div>
 
             {/* Goals + Charts */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
-                <GoalsList
-                    title="Metas de Ahorro"
-                    goals={savingsHook.goals}
-                    color={COLORS.savings}
-                    icon={Shield}
-                    totalIncome={totalIncome}
-                    goalSettings={goalSettings.settings}
-                    onAdd={savingsHook.add}
-                    onUpdate={savingsHook.update}
-                    onRemove={savingsHook.remove}
-                    onAllocationChange={async (goalId, pct, amount) => {
-                        await goalSettings.upsert(goalId, pct, amount);
-                        await savingsHook.reload();
-                    }}
-                    isCreating={savingsHook.isCreating}
-                    isDeletingId={savingsHook.isDeletingId}
-                />
-                <GoalsList
-                    title="Metas de Inversión"
-                    goals={investmentHook.goals}
-                    color={COLORS.investment}
-                    icon={TrendingUp}
-                    totalIncome={totalIncome}
-                    goalSettings={goalSettings.settings}
-                    onAdd={investmentHook.add}
-                    onUpdate={investmentHook.update}
-                    onRemove={investmentHook.remove}
-                    onAllocationChange={async (goalId, pct, amount) => {
-                        await goalSettings.upsert(goalId, pct, amount);
-                        await investmentHook.reload();
-                    }}
-                    isCreating={investmentHook.isCreating}
-                    isDeletingId={investmentHook.isDeletingId}
-                />
-                <FinancialSummaryChart data={barData} totalIncome={totalIncome} />
-                <DistributionChart data={pieData} totalIncome={totalIncome} breakdownData={breakdownData} />
+                {savingsHook.loading && savingsHook.goals.length === 0 ? (
+                    <GoalsListSkeleton />
+                ) : (
+                    <GoalsList
+                        title="Metas de Ahorro"
+                        goals={savingsHook.goals}
+                        color={COLORS.savings}
+                        icon={Shield}
+                        totalIncome={totalIncome}
+                        goalSettings={goalSettings.settings}
+                        onAdd={savingsHook.add}
+                        onUpdate={savingsHook.update}
+                        onRemove={savingsHook.remove}
+                        onAllocationChange={async (goalId, pct, amount) => {
+                            await goalSettings.upsert(goalId, pct, amount);
+                            await savingsHook.reload();
+                        }}
+                        isCreating={savingsHook.isCreating}
+                        isDeletingId={savingsHook.isDeletingId}
+                    />
+                )}
+                {investmentHook.loading && investmentHook.goals.length === 0 ? (
+                    <GoalsListSkeleton />
+                ) : (
+                    <GoalsList
+                        title="Metas de Inversión"
+                        goals={investmentHook.goals}
+                        color={COLORS.investment}
+                        icon={TrendingUp}
+                        totalIncome={totalIncome}
+                        goalSettings={goalSettings.settings}
+                        onAdd={investmentHook.add}
+                        onUpdate={investmentHook.update}
+                        onRemove={investmentHook.remove}
+                        onAllocationChange={async (goalId, pct, amount) => {
+                            await goalSettings.upsert(goalId, pct, amount);
+                            await investmentHook.reload();
+                        }}
+                        isCreating={investmentHook.isCreating}
+                        isDeletingId={investmentHook.isDeletingId}
+                    />
+                )}
+                {(incomeHook.loading || !budgetMonthId) && incomeHook.incomes.length === 0 ? (
+                    <ChartSkeleton variant="bar" />
+                ) : (
+                    <FinancialSummaryChart data={barData} totalIncome={totalIncome} />
+                )}
+                {(incomeHook.loading || !budgetMonthId) && incomeHook.incomes.length === 0 ? (
+                    <ChartSkeleton variant="donut" />
+                ) : (
+                    <DistributionChart data={pieData} totalIncome={totalIncome} breakdownData={breakdownData} />
+                )}
             </div>
 
             <Sidebar
