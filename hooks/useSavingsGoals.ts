@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useContext } from "react";
+import { useState, useEffect, useCallback, useRef, useContext } from "react";
 import { generateIdempotencyKey } from "@/lib/idempotency";
 import { AlertContext } from "@/contexts/AlertContext";
 import { CacheContext } from "@/contexts/CacheContext";
@@ -49,6 +49,16 @@ export const useSavingsGoals = (type: GoalType, year: number, month: number): Us
     const alertCtx = useContext(AlertContext);
     const cacheCtx = useContext(CacheContext);
     const fetchFn = cacheCtx?.cachedFetch ?? fetch;
+    const prevKeyRef = useRef(`${type}-${year}-${month}`);
+
+    // Clear data when type/year/month changes so skeletons show for uncached months
+    useEffect(() => {
+        const key = `${type}-${year}-${month}`;
+        if (prevKeyRef.current !== key) {
+            prevKeyRef.current = key;
+            setGoals([]);
+        }
+    }, [type, year, month]);
 
     const load = useCallback(async () => {
         setLoading(true);

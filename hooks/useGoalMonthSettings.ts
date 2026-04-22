@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useContext } from "react";
+import { useState, useEffect, useCallback, useRef, useContext } from "react";
 import { generateIdempotencyKey } from "@/lib/idempotency";
 import { AlertContext } from "@/contexts/AlertContext";
 import { CacheContext } from "@/contexts/CacheContext";
@@ -35,6 +35,15 @@ export const useGoalMonthSettings = (
     const alertCtx = useContext(AlertContext);
     const cacheCtx = useContext(CacheContext);
     const fetchFn = cacheCtx?.cachedFetch ?? fetch;
+    const prevBudgetMonthIdRef = useRef(budgetMonthId);
+
+    // Clear data when budgetMonthId changes so skeletons show for uncached months
+    useEffect(() => {
+        if (prevBudgetMonthIdRef.current !== budgetMonthId) {
+            prevBudgetMonthIdRef.current = budgetMonthId;
+            setSettings(new Map());
+        }
+    }, [budgetMonthId]);
 
     const load = useCallback(async () => {
         if (!budgetMonthId) return;

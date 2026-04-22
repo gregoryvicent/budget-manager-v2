@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useContext } from "react";
+import { useState, useEffect, useCallback, useRef, useContext } from "react";
 import { type ListItem } from "@/lib/types";
 import { generateIdempotencyKey } from "@/lib/idempotency";
 import { AlertContext } from "@/contexts/AlertContext";
@@ -35,6 +35,15 @@ export const useIncomeEntries = (budgetMonthId: string | null): IncomeEntriesSta
     const alertCtx = useContext(AlertContext);
     const cacheCtx = useContext(CacheContext);
     const fetchFn = cacheCtx?.cachedFetch ?? fetch;
+    const prevBudgetMonthIdRef = useRef(budgetMonthId);
+
+    // Clear data when budgetMonthId changes so skeletons show for uncached months
+    useEffect(() => {
+        if (prevBudgetMonthIdRef.current !== budgetMonthId) {
+            prevBudgetMonthIdRef.current = budgetMonthId;
+            setIncomes([]);
+        }
+    }, [budgetMonthId]);
 
     const load = useCallback(async () => {
         if (!budgetMonthId) return;
