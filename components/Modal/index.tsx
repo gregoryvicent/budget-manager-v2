@@ -36,10 +36,12 @@ export default function Modal({
     document.body.style.overflow = "hidden";
     document.addEventListener("keydown", handleKeyDown);
 
+    const triggerEl = triggerRef?.current;
+
     return () => {
       document.body.style.overflow = prev;
       document.removeEventListener("keydown", handleKeyDown);
-      triggerRef?.current?.focus();
+      triggerEl?.focus();
     };
   }, [open, handleKeyDown, triggerRef]);
 

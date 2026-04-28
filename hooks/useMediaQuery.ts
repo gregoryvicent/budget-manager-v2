@@ -1,11 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useSyncExternalStore, useCallback } from "react";
 
 /**
  * Detects whether a CSS media query matches the current viewport.
  * Returns `false` during SSR to avoid hydration mismatches (mobile-first).
- * Synchronizes state on the client via `useEffect` and `matchMedia` listener.
+ * Uses useSyncExternalStore for safe synchronization with the browser.
  *
  * @param {string} query - CSS media query string, e.g. "(min-width: 768px)"
  * @returns {boolean} Whether the media query currently matches
@@ -14,21 +14,18 @@ import { useState, useEffect } from "react";
  * const isDesktop = useMediaQuery("(min-width: 1024px)");
  */
 export function useMediaQuery(query: string): boolean {
-  const [matches, setMatches] = useState(false);
+  const subscribe = useCallback(
+    (callback: () => void) => {
+      const mediaQueryList = window.matchMedia(query);
+      mediaQueryList.addEventListener("change", callback);
+      return () => mediaQueryList.removeEventListener("change", callback);
+    },
+    [query],
+  );
 
-  useEffect(() => {
-    const mediaQueryList = window.matchMedia(query);
-    setMatches(mediaQueryList.matches);
+  const getSnapshot = useCallback(() => window.matchMedia(query).matches, [query]);
 
-    const handleChange = (event: MediaQueryListEvent) => {
-      setMatches(event.matches);
-    };
+  const getServerSnapshot = useCallback(() => false, []);
 
-    mediaQueryList.addEventListener("change", handleChange);
-    return () => {
-      mediaQueryList.removeEventListener("change", handleChange);
-    };
-  }, [query]);
-
-  return matches;
+  return useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
 }

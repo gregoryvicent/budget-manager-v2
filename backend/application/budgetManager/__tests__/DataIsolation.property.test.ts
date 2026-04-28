@@ -120,10 +120,10 @@ function createMockSavingsGoalRepo(): ISavingsGoalRepository {
     findByUser: async (userId: string) => store.filter((g) => g.userId === userId),
     findById: async (id: string) => store.find((g) => g.id === id) ?? null,
     findByUserAndType: async (userId: string, type: GoalType) =>
-      store.find((g) => g.userId === userId && g.type === type) ?? null,
+      store.filter((g) => g.userId === userId && g.type === type),
     create: async (data: Pick<SavingsGoal, "userId" | "type" | "title" | "goalAmount">) => {
       const now = new Date();
-      const goal: SavingsGoal = { id: crypto.randomUUID(), ...data, createdAt: now, updatedAt: now };
+      const goal: SavingsGoal = { id: crypto.randomUUID(), ...data, totalContributed: 0, createdAt: now, updatedAt: now };
       store.push(goal);
       return goal;
     },
@@ -132,6 +132,18 @@ function createMockSavingsGoalRepo(): ISavingsGoalRepository {
       Object.assign(g, data, { updatedAt: new Date() });
       return g;
     },
+    findAssignedByUserAndType: async (userId: string, type: GoalType, _budgetMonthId: string) =>
+      store.filter((g) => g.userId === userId && g.type === type),
+    findUnassignedByUserAndType: async (_userId: string, _type: GoalType, _budgetMonthId: string) => [],
+    delete: async (id: string) => {
+      const idx = store.findIndex((g) => g.id === id);
+      if (idx >= 0) store.splice(idx, 1);
+    },
+    recalcTotalContributed: async (id: string) => {
+      const g = store.find((x) => x.id === id)!;
+      return g;
+    },
+    sumContributedUpTo: async (_id: string, _year: number, _month: number) => 0,
   };
 }
 

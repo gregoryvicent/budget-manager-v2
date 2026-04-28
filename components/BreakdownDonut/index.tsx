@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState } from "react";
 import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
 import { COLORS, FONTS, FONT_SIZES, FONT_WEIGHTS, SPACING, RADIUS, formatCurrency } from "@/lib/theme";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
@@ -30,13 +30,13 @@ export default function BreakdownDonut({ title, items, referenceTotal, emptyMess
   const outerRadius = isMobile ? 54 : 64;
   const innerRadius = isMobile ? 36 : 43;
 
-  const handlePieEnter = useCallback((_: unknown, index: number) => {
+  const handlePieEnter = (_: unknown, index: number) => {
     if (!isEmpty) setHoveredName(pieData[index].name);
-  }, [isEmpty, pieData]);
+  };
 
-  const handlePieLeave = useCallback(() => {
+  const handlePieLeave = () => {
     setHoveredName(null);
-  }, []);
+  };
 
   return (
     <div

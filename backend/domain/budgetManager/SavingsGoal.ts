@@ -7,10 +7,6 @@ export interface SavingsGoal {
   title: string;
   goalAmount: number;
   totalContributed: number;
-  startYear: number;
-  startMonth: number;
-  archivedYear: number | null;
-  archivedMonth: number | null;
   createdAt: Date;
   updatedAt: Date;
 }

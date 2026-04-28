@@ -256,7 +256,6 @@ describe("Property 10: Chronological alert stacking — N alerts rendered in ord
 
         // Provide a stable crypto.randomUUID for the provider
         let counter = 0;
-        const originalRandomUUID = crypto.randomUUID.bind(crypto);
         vi.spyOn(crypto, "randomUUID").mockImplementation(() => {
           counter++;
           return `00000000-0000-4000-8000-${String(counter).padStart(12, "0")}`;

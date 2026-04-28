@@ -183,7 +183,7 @@ function seedExpenseEntry(stores: CascadeStores, budgetMonthId: string, name: st
 
 function seedSavingsGoal(stores: CascadeStores, userId: string, type: GoalType, title: string, goalAmount: number): SavingsGoal {
   const now = new Date();
-  const goal: SavingsGoal = { id: crypto.randomUUID(), userId, type, title, goalAmount, createdAt: now, updatedAt: now };
+  const goal: SavingsGoal = { id: crypto.randomUUID(), userId, type, title, goalAmount, totalContributed: 0, createdAt: now, updatedAt: now };
   stores.savingsGoals.push(goal);
   return goal;
 }
@@ -236,8 +236,6 @@ const arbEmail = () => fc.emailAddress();
 const arbAmount = () => fc.double({ min: 0.01, max: 999999, noNaN: true });
 const arbExpenseType = () => fc.constantFrom<ExpenseType>("FIXED", "VARIABLE");
 const arbGoalType = () => fc.constantFrom<GoalType>("SAVINGS", "INVESTMENT");
-const arbMonth = () => fc.integer({ min: 1, max: 12 });
-const arbYear = () => fc.integer({ min: 2020, max: 2030 });
 const arbAllocationPct = () => fc.double({ min: 0.01, max: 100, noNaN: true });
 
 // Generates a count for how many of each child entity to create

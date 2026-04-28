@@ -32,7 +32,10 @@ export function useSwipeGesture(
   options: UseSwipeGestureOptions
 ): void {
   const optionsRef = useRef(options);
-  optionsRef.current = options;
+
+  useEffect(() => {
+    optionsRef.current = options;
+  });
 
   useEffect(() => {
     const element = ref.current;

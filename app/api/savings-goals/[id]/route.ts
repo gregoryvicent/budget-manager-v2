@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { updateSavingsGoal } from "@/backend/application/budgetManager/UpdateSavingsGoal";
+import { deleteSavingsGoal } from "@/backend/application/budgetManager/DeleteSavingsGoal";
 import { PrismaSavingsGoalRepository } from "@/backend/adapters/db/prisma/budgetManager/PrismaSavingsGoalRepository";
 import { requireAuth } from "@/lib/apiAuth";
 import { withIdempotency } from "@/lib/withIdempotency";
@@ -82,8 +83,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
 }
 
 /**
- * Archives a savings goal from a given month onwards.
- * Expects body: { year: number, month: number }
+ * Permanently deletes a savings goal and all its month assignments (cascade).
  * Supports idempotency via the Idempotency-Key header.
  */
 export async function DELETE(req: NextRequest, { params }: Params) {
@@ -95,19 +95,11 @@ export async function DELETE(req: NextRequest, { params }: Params) {
     if ("error" in result) {
       return NextResponse.json({ error: result.error }, { status: result.status });
     }
-    const body = await req.json();
-    const { year, month } = body as { year?: number; month?: number };
-    if (!year || !month) {
-      return NextResponse.json(
-        { error: "Los campos year y month son requeridos." },
-        { status: 400 },
-      );
-    }
 
     const { response } = await withIdempotency({
       idempotencyKey,
       handler: async () => {
-        await repo.archive(id, year, month);
+        await deleteSavingsGoal(repo, id);
         return NextResponse.json({ success: true });
       },
     });

@@ -45,4 +45,8 @@ export class PrismaGoalMonthSettingRepository implements IGoalMonthSettingReposi
     const row = await prisma.goalMonthSetting.update({ where: { id }, data });
     return toGoalMonthSetting(row);
   }
+
+  async delete(id: string): Promise<void> {
+    await prisma.goalMonthSetting.delete({ where: { id } });
+  }
 }

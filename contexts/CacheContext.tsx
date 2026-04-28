@@ -33,7 +33,7 @@ export const INVALIDATION_DEPS: Record<string, string[]> = {
   "/api/income-entries": ["/api/budgets/history"],
   "/api/expense-entries": ["/api/budgets/history"],
   "/api/savings-goals": ["/api/budgets/history"],
-  "/api/goal-month-settings": ["/api/budgets/history"],
+  "/api/goal-month-settings": ["/api/budgets/history", "/api/savings-goals"],
   "/api/budgets": ["/api/budgets/history"],
 };
 
@@ -139,7 +139,16 @@ export function CacheProvider({ children }: { children: React.ReactNode }) {
       const inFlight = inFlightRef.current;
       const existing = inFlight.get(url);
       if (existing) {
-        return existing;
+        // Wait for the in-flight request to complete, then serve from cache
+        await existing;
+        const cached = cache.get(url);
+        if (cached) {
+          return new Response(JSON.stringify(cached.data), {
+            status: 200,
+            headers: { "Content-Type": "application/json" },
+          });
+        }
+        // Cache miss after in-flight — fall through to a new fetch
       }
 
       // Execute fetch, store in cache, and handle deduplication

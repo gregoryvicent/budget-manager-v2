@@ -1,5 +1,5 @@
 import Skeleton from "@/components/Skeleton";
-import { COLORS, RADIUS, SPACING, CARD_STYLE } from "@/lib/theme";
+import { COLORS, RADIUS } from "@/lib/theme";
 
 /**
  * Skeleton placeholder for GoalsList during loading.

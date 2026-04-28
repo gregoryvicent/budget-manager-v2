@@ -7,4 +7,5 @@ export interface IGoalMonthSettingRepository {
   findByGoal(savingsGoalId: string): Promise<GoalMonthSetting[]>;
   create(data: Pick<GoalMonthSetting, "savingsGoalId" | "budgetMonthId" | "allocationPct">): Promise<GoalMonthSetting>;
   update(id: string, data: Partial<Pick<GoalMonthSetting, "allocationPct" | "amountContributed">>): Promise<GoalMonthSetting>;
+  delete(id: string): Promise<void>;
 }

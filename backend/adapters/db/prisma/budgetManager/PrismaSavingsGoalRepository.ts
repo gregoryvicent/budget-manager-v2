@@ -4,7 +4,7 @@ import { SavingsGoal, GoalType } from "@/backend/domain/budgetManager/SavingsGoa
 
 /**
  * Prisma implementation of the savings goal repository.
- * Supports multiple goals per user per type with soft-archive.
+ * Goals are global entities; visibility per month is controlled by GoalMonthSetting.
  */
 export class PrismaSavingsGoalRepository implements ISavingsGoalRepository {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -13,10 +13,6 @@ export class PrismaSavingsGoalRepository implements ISavingsGoalRepository {
       ...row,
       goalAmount: row.goalAmount.toNumber(),
       totalContributed: row.totalContributed.toNumber(),
-      startYear: row.startYear,
-      startMonth: row.startMonth,
-      archivedYear: row.archivedYear ?? null,
-      archivedMonth: row.archivedMonth ?? null,
     };
   }
 
@@ -34,33 +30,29 @@ export class PrismaSavingsGoalRepository implements ISavingsGoalRepository {
   }
 
   /**
-   * Returns goals that are active for the given year/month.
-   * A goal is active if:
-   * - Its start date is on or before the given month
-   * - It has no archive date, or its archive date is after the given month
+   * Returns goals assigned to a specific budget month via GoalMonthSetting.
    */
-  async findActiveByUserAndType(userId: string, type: GoalType, year: number, month: number): Promise<SavingsGoal[]> {
+  async findAssignedByUserAndType(userId: string, type: GoalType, budgetMonthId: string): Promise<SavingsGoal[]> {
     const rows = await prisma.savingsGoal.findMany({
       where: {
         userId,
         type,
-        AND: [
-          // Started on or before this month
-          {
-            OR: [
-              { startYear: { lt: year } },
-              { startYear: year, startMonth: { lte: month } },
-            ],
-          },
-          // Not archived yet, or archived after this month
-          {
-            OR: [
-              { archivedYear: null },
-              { archivedYear: { gt: year } },
-              { archivedYear: year, archivedMonth: { gt: month } },
-            ],
-          },
-        ],
+        goalMonthSettings: { some: { budgetMonthId } },
+      },
+      orderBy: { createdAt: "asc" },
+    });
+    return rows.map(r => this.toModel(r));
+  }
+
+  /**
+   * Returns goals NOT assigned to a specific budget month (no GoalMonthSetting for that month).
+   */
+  async findUnassignedByUserAndType(userId: string, type: GoalType, budgetMonthId: string): Promise<SavingsGoal[]> {
+    const rows = await prisma.savingsGoal.findMany({
+      where: {
+        userId,
+        type,
+        goalMonthSettings: { none: { budgetMonthId } },
       },
       orderBy: { createdAt: "asc" },
     });
@@ -73,21 +65,13 @@ export class PrismaSavingsGoalRepository implements ISavingsGoalRepository {
     return this.toModel(row);
   }
 
-  async create(data: Pick<SavingsGoal, "userId" | "type" | "title" | "goalAmount" | "startYear" | "startMonth">): Promise<SavingsGoal> {
+  async create(data: Pick<SavingsGoal, "userId" | "type" | "title" | "goalAmount">): Promise<SavingsGoal> {
     const row = await prisma.savingsGoal.create({ data });
     return this.toModel(row);
   }
 
   async update(id: string, data: Partial<Pick<SavingsGoal, "title" | "goalAmount">>): Promise<SavingsGoal> {
     const row = await prisma.savingsGoal.update({ where: { id }, data });
-    return this.toModel(row);
-  }
-
-  async archive(id: string, year: number, month: number): Promise<SavingsGoal> {
-    const row = await prisma.savingsGoal.update({
-      where: { id },
-      data: { archivedYear: year, archivedMonth: month },
-    });
     return this.toModel(row);
   }
 

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-function-type */
 import { describe, it, expect } from "vitest";
 import fc from "fast-check";
 import { authOptions } from "@/lib/auth";

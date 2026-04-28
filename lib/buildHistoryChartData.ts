@@ -16,7 +16,7 @@ const MONTH_LABELS = [
  */
 export function buildHistoryChartData(
   summaries: MonthlySummary[],
-  year: number,
+  _year: number,
 ): HistoryChartEntry[] {
   const lookup = new Map<number, MonthlySummary>();
   for (const s of summaries) {

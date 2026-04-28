@@ -6,7 +6,7 @@ export async function GET() {
 			{ status: "ok", message: "Hello World" },
 			{ status: 200 }
 		)
-	} catch (error) {
+	} catch (_error) {
 		return NextResponse.json(
 			{ status: "error", message: "Some problem" },
 			{ status: 500 }

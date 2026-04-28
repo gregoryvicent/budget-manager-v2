@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { TrendingUp, TrendingDown, DollarSign, Shield } from "lucide-react";
 
@@ -35,8 +35,33 @@ export default function BudgetDashboard() {
     const { data: session, status } = useSession();
 
     const [sidebarOpen, setSidebarOpen]     = useState(false);
-    const [selectedYear, setSelectedYear]   = useState(new Date().getFullYear());
-    const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
+
+    const [selectedYear, setSelectedYear]   = useState(() => {
+        if (typeof window !== "undefined") {
+            const saved = sessionStorage.getItem("budget_year");
+            return saved ? Number(saved) : new Date().getFullYear();
+        }
+        return new Date().getFullYear();
+    });
+    const [selectedMonth, setSelectedMonth] = useState(() => {
+        if (typeof window !== "undefined") {
+            const saved = sessionStorage.getItem("budget_month");
+            return saved ? Number(saved) : new Date().getMonth() + 1;
+        }
+        return new Date().getMonth() + 1;
+    });
+
+    // Persist selected month to sessionStorage
+    useEffect(() => {
+        sessionStorage.setItem("budget_year", String(selectedYear));
+        sessionStorage.setItem("budget_month", String(selectedMonth));
+    }, [selectedYear, selectedMonth]);
+
+    /** Updates the selected month. */
+    const handleMonthSelect = (year: number, month: number) => {
+        setSelectedYear(year);
+        setSelectedMonth(month);
+    };
 
     const { budgetMonthId } = useBudgetMonth(selectedYear, selectedMonth);
 
@@ -44,8 +69,8 @@ export default function BudgetDashboard() {
     const fixedHook    = useExpenseEntries(budgetMonthId, "FIXED");
     const variableHook = useExpenseEntries(budgetMonthId, "VARIABLE");
 
-    const savingsHook    = useSavingsGoals("SAVINGS", selectedYear, selectedMonth);
-    const investmentHook = useSavingsGoals("INVESTMENT", selectedYear, selectedMonth);
+    const savingsHook    = useSavingsGoals("SAVINGS", budgetMonthId, selectedYear, selectedMonth);
+    const investmentHook = useSavingsGoals("INVESTMENT", budgetMonthId, selectedYear, selectedMonth);
     const goalSettings   = useGoalMonthSettings(budgetMonthId);
 
     const {
@@ -274,7 +299,7 @@ export default function BudgetDashboard() {
             </div>
 
             {/* Goals + Charts */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6 items-start">
                 {savingsHook.loading && savingsHook.goals.length === 0 ? (
                     <GoalsListSkeleton />
                 ) : (
@@ -294,6 +319,15 @@ export default function BudgetDashboard() {
                         }}
                         isCreating={savingsHook.isCreating}
                         isDeletingId={savingsHook.isDeletingId}
+                        unassignedGoals={savingsHook.unassignedGoals}
+                        onAssign={async (goalId) => {
+                            await savingsHook.assign(goalId);
+                            await goalSettings.reload();
+                        }}
+                        onUnlink={savingsHook.unlink}
+                        isAssigning={savingsHook.isAssigning}
+                        isUnlinkingId={savingsHook.isUnlinkingId}
+                        settingIds={goalSettings.settingIds}
                     />
                 )}
                 {investmentHook.loading && investmentHook.goals.length === 0 ? (
@@ -315,6 +349,15 @@ export default function BudgetDashboard() {
                         }}
                         isCreating={investmentHook.isCreating}
                         isDeletingId={investmentHook.isDeletingId}
+                        unassignedGoals={investmentHook.unassignedGoals}
+                        onAssign={async (goalId) => {
+                            await investmentHook.assign(goalId);
+                            await goalSettings.reload();
+                        }}
+                        onUnlink={investmentHook.unlink}
+                        isAssigning={investmentHook.isAssigning}
+                        isUnlinkingId={investmentHook.isUnlinkingId}
+                        settingIds={goalSettings.settingIds}
                     />
                 )}
                 {(incomeHook.loading || !budgetMonthId) && incomeHook.incomes.length === 0 ? (
@@ -334,7 +377,7 @@ export default function BudgetDashboard() {
                 onToggle={() => setSidebarOpen(o => !o)}
                 selectedYear={selectedYear}
                 selectedMonth={selectedMonth}
-                onMonthSelect={(year, month) => { setSelectedYear(year); setSelectedMonth(month); }}
+                onMonthSelect={handleMonthSelect}
             />
         </div>
     );

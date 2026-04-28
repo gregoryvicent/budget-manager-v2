@@ -1,5 +1,5 @@
 import Skeleton from "@/components/Skeleton";
-import { COLORS, RADIUS, SPACING } from "@/lib/theme";
+import { COLORS, RADIUS } from "@/lib/theme";
 
 /**
  * Skeleton placeholder for the budget history page during loading.
