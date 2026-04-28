@@ -35,6 +35,7 @@ export const INVALIDATION_DEPS: Record<string, string[]> = {
   "/api/savings-goals": ["/api/budgets/history"],
   "/api/goal-month-settings": ["/api/budgets/history", "/api/savings-goals"],
   "/api/budgets": ["/api/budgets/history"],
+  "/api/bulk-copy": ["/api/income-entries", "/api/expense-entries", "/api/budgets/history"],
 };
 
 export const CacheContext = createContext<CacheContextValue | null>(null);

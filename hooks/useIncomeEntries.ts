@@ -16,6 +16,7 @@ interface IncomeEntriesState {
     add: (name: string, amount: number) => Promise<void>;
     update: (id: string, name: string, amount: number) => Promise<void>;
     remove: (id: string) => Promise<void>;
+    reload: () => Promise<void>;
 }
 
 /**
@@ -133,5 +134,5 @@ export const useIncomeEntries = (budgetMonthId: string | null): IncomeEntriesSta
         }
     };
 
-    return { incomes, loading, error, isCreating, isUpdating, isDeletingId, add, update, remove };
+    return { incomes, loading, error, isCreating, isUpdating, isDeletingId, add, update, remove, reload: load };
 };

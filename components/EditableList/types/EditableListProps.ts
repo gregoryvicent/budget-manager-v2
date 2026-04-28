@@ -14,4 +14,6 @@ export interface EditableListProps {
     isUpdating?: boolean;
     /** ID of the item currently being deleted, or null. */
     isDeletingId?: string | null;
+    /** Callback to open the "Copy from another month" modal. Button only shown when defined. */
+    onCopyFromMonth?: () => void;
 }

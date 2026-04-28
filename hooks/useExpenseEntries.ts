@@ -18,6 +18,7 @@ interface ExpenseEntriesState {
     add: (name: string, amount: number) => Promise<void>;
     update: (id: string, name: string, amount: number) => Promise<void>;
     remove: (id: string) => Promise<void>;
+    reload: () => Promise<void>;
 }
 
 /**
@@ -136,5 +137,5 @@ export const useExpenseEntries = (budgetMonthId: string | null, type: ExpenseTyp
         }
     };
 
-    return { expenses, loading, error, isCreating, isUpdating, isDeletingId, add, update, remove };
+    return { expenses, loading, error, isCreating, isUpdating, isDeletingId, add, update, remove, reload: load };
 };

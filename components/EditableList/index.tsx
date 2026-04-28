@@ -1,8 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import { Copy } from "lucide-react";
 import {
-    COLORS, FONTS, FONT_SIZES, FONT_WEIGHTS, RADIUS,
+    COLORS, FONTS, FONT_SIZES, FONT_WEIGHTS, RADIUS, TRANSITIONS,
     formatCurrency,
 } from "@/lib/theme";
 import { type ListItem } from "@/lib/types";
@@ -18,7 +19,7 @@ import { EditableListProps } from "./types/EditableListProps";
  *
  * @param {EditableListProps} props - List configuration including title, items, color, icon, and CRUD callbacks
  */
-export default function EditableList({ title, items, color, icon: Icon, onAdd, onUpdate, onDelete, isCreating = false, isUpdating = false, isDeletingId = null }: EditableListProps) {
+export default function EditableList({ title, items, color, icon: Icon, onAdd, onUpdate, onDelete, isCreating = false, isUpdating = false, isDeletingId = null, onCopyFromMonth }: EditableListProps) {
     const [newName, setNewName]       = useState("");
     const [newAmount, setNewAmount]   = useState("");
     const [adding, setAdding]         = useState(false);
@@ -62,24 +63,44 @@ export default function EditableList({ title, items, color, icon: Icon, onAdd, o
             }}
         >
             {/* Header */}
-            <div className="flex items-center gap-2.5 shrink-0">
-                <div
-                    className="flex items-center justify-center w-9 h-9"
-                    style={{
-                        borderRadius: RADIUS.lg,
-                        background: color + "22",
-                    }}
-                >
-                    <Icon size={18} color={color} />
+            <div className="flex items-center justify-between shrink-0">
+                <div className="flex items-center gap-2.5">
+                    <div
+                        className="flex items-center justify-center w-9 h-9"
+                        style={{
+                            borderRadius: RADIUS.lg,
+                            background: color + "22",
+                        }}
+                    >
+                        <Icon size={18} color={color} />
+                    </div>
+                    <span style={{
+                        fontFamily: FONTS.heading,
+                        fontWeight: FONT_WEIGHTS.bold,
+                        fontSize:   FONT_SIZES.xl,
+                        color:      COLORS.text,
+                    }}>
+                        {title}
+                    </span>
                 </div>
-                <span style={{
-                    fontFamily: FONTS.heading,
-                    fontWeight: FONT_WEIGHTS.bold,
-                    fontSize:   FONT_SIZES.xl,
-                    color:      COLORS.text,
-                }}>
-                    {title}
-                </span>
+                {onCopyFromMonth && (
+                    <button
+                        onClick={onCopyFromMonth}
+                        aria-label={`Copiar ${title} de otro mes`}
+                        className="flex items-center gap-1.5 min-h-[44px] min-w-[44px] px-3 py-2 cursor-pointer"
+                        style={{
+                            borderRadius: RADIUS.lg,
+                            border: `1px dashed ${color}55`,
+                            background: "none",
+                            color,
+                            fontSize: FONT_SIZES.body,
+                            fontFamily: FONTS.body,
+                            transition: `all ${TRANSITIONS.base}`,
+                        }}
+                    >
+                        <Copy size={14} /> Copiar
+                    </button>
+                )}
             </div>
 
             {/* Scrollable list */}

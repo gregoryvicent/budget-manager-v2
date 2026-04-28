@@ -22,8 +22,10 @@ import { useIncomeEntries } from "@/hooks/useIncomeEntries";
 import { useExpenseEntries } from "@/hooks/useExpenseEntries";
 import { useSavingsGoals } from "@/hooks/useSavingsGoals";
 import { useGoalMonthSettings } from "@/hooks/useGoalMonthSettings";
+import CopyItemsModal from "@/components/CopyItemsModal";
 import { COLORS, FONTS } from "@/lib/theme";
 import { getCategoryColor } from "@/lib/breakdownPalette";
+import type { CopyCategory } from "@/hooks/useCopyItems";
 import type { BreakdownData } from "@/components/DistributionChart/types/BreakdownData";
 
 /**
@@ -35,6 +37,12 @@ export default function BudgetDashboard() {
     const { data: session, status } = useSession();
 
     const [sidebarOpen, setSidebarOpen]     = useState(false);
+    const [copyModal, setCopyModal] = useState<{
+        open: boolean;
+        category: CopyCategory;
+        categoryLabel: string;
+        color: string;
+    } | null>(null);
 
     const [selectedYear, setSelectedYear]   = useState(() => {
         if (typeof window !== "undefined") {
@@ -178,6 +186,16 @@ export default function BudgetDashboard() {
         totalIncome, totalExpenses, totalSavingsAllocation, totalInvestmentAllocation,
     ]);
 
+    /** Reloads the correct hook after a successful copy operation. */
+    const handleCopySuccess = () => {
+        if (!copyModal) return;
+        switch (copyModal.category) {
+            case "INCOME": incomeHook.reload(); break;
+            case "FIXED_EXPENSE": fixedHook.reload(); break;
+            case "VARIABLE_EXPENSE": variableHook.reload(); break;
+        }
+    };
+
     if (status === "loading") return null;
 
     return (
@@ -262,6 +280,7 @@ export default function BudgetDashboard() {
                         isCreating={incomeHook.isCreating}
                         isUpdating={incomeHook.isUpdating}
                         isDeletingId={incomeHook.isDeletingId}
+                        onCopyFromMonth={() => setCopyModal({ open: true, category: "INCOME", categoryLabel: "Fuentes de Ingresos", color: COLORS.income })}
                     />
                 )}
                 {(fixedHook.loading || !budgetMonthId) && fixedHook.expenses.length === 0 ? (
@@ -278,6 +297,7 @@ export default function BudgetDashboard() {
                         isCreating={fixedHook.isCreating}
                         isUpdating={fixedHook.isUpdating}
                         isDeletingId={fixedHook.isDeletingId}
+                        onCopyFromMonth={() => setCopyModal({ open: true, category: "FIXED_EXPENSE", categoryLabel: "Gastos Fijos del Mes", color: COLORS.fixed })}
                     />
                 )}
                 {(variableHook.loading || !budgetMonthId) && variableHook.expenses.length === 0 ? (
@@ -294,6 +314,7 @@ export default function BudgetDashboard() {
                         isCreating={variableHook.isCreating}
                         isUpdating={variableHook.isUpdating}
                         isDeletingId={variableHook.isDeletingId}
+                        onCopyFromMonth={() => setCopyModal({ open: true, category: "VARIABLE_EXPENSE", categoryLabel: "Gastos Variables del Mes", color: COLORS.variable })}
                     />
                 )}
             </div>
@@ -379,6 +400,20 @@ export default function BudgetDashboard() {
                 selectedMonth={selectedMonth}
                 onMonthSelect={handleMonthSelect}
             />
+
+            {copyModal && budgetMonthId && (
+                <CopyItemsModal
+                    open={copyModal.open}
+                    onClose={() => setCopyModal(null)}
+                    category={copyModal.category}
+                    categoryLabel={copyModal.categoryLabel}
+                    color={copyModal.color}
+                    budgetMonthId={budgetMonthId}
+                    selectedYear={selectedYear}
+                    selectedMonth={selectedMonth}
+                    onCopySuccess={handleCopySuccess}
+                />
+            )}
         </div>
     );
 }
