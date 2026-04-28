@@ -88,7 +88,7 @@ export default function GoalsList({
     return (
         <div className="flex flex-col gap-4 w-full">
             {/* Section header — buttons always visible */}
-            <div className="flex items-center justify-between flex-wrap gap-2">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                 <span style={{
                     fontFamily: FONTS.heading,
                     fontWeight: FONT_WEIGHTS.bold,
@@ -97,7 +97,7 @@ export default function GoalsList({
                 }}>
                     {title}
                 </span>
-                <div className="flex items-center gap-2 flex-wrap">
+                <div className="flex items-center gap-2">
                     {onAssign && (
                         <GoalAssignSelector
                             goals={unassignedGoals}

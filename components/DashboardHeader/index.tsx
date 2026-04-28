@@ -35,7 +35,7 @@ export default function DashboardHeader({ afterExpenses, onToggleSidebar, select
                         <Wallet size={20} color={COLORS.text} />
                     </div>
                     <h1
-                        className="m-0 text-xl lg:text-[22px]"
+                        className="m-0 text-xl lg:text-[22px] truncate max-w-[60vw] md:max-w-none"
                         style={{
                             fontWeight: FONT_WEIGHTS.extrabold,
                             fontFamily: FONTS.heading,

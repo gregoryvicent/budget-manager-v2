@@ -89,7 +89,7 @@ export default function GoalAssignSelector({ goals, onAssign, isAssigning, color
 
             {open && (
                 <div
-                    className="absolute z-50 mt-2 w-64 max-h-60 overflow-y-auto"
+                    className="absolute z-50 mt-2 w-[calc(100vw-2rem)] sm:w-64 max-h-60 overflow-y-auto right-0"
                     style={{
                         background: COLORS.card,
                         border: `1px solid ${COLORS.cardBorder}`,

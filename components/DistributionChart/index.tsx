@@ -234,6 +234,7 @@ export default function DistributionChart({ data, totalIncome, breakdownData }: 
                         ref={buttonRef}
                         onClick={() => setIsModalOpen(true)}
                         disabled={isEmpty}
+                        className="min-h-[44px]"
                         style={{
                             alignSelf: "center",
                             marginTop: SPACING["3"],

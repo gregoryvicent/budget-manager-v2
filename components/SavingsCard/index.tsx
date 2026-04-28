@@ -135,7 +135,7 @@ export default function SavingsCard({
 
                 {actions && (
                     <div
-                        className="flex justify-end gap-2 pt-3 mt-1"
+                        className="flex flex-wrap justify-end gap-2 pt-3 mt-1"
                         style={{ borderTop: `1px solid ${COLORS.cardBorder}` }}
                     >
                         {actions}

@@ -63,10 +63,10 @@ export default function EditableList({ title, items, color, icon: Icon, onAdd, o
             }}
         >
             {/* Header */}
-            <div className="flex items-center justify-between shrink-0">
-                <div className="flex items-center gap-2.5">
+            <div className="flex flex-wrap items-center justify-between gap-2 shrink-0">
+                <div className="flex items-center gap-2.5 min-w-0">
                     <div
-                        className="flex items-center justify-center w-9 h-9"
+                        className="flex items-center justify-center w-9 h-9 shrink-0"
                         style={{
                             borderRadius: RADIUS.lg,
                             background: color + "22",
@@ -74,7 +74,7 @@ export default function EditableList({ title, items, color, icon: Icon, onAdd, o
                     >
                         <Icon size={18} color={color} />
                     </div>
-                    <span style={{
+                    <span className="truncate" style={{
                         fontFamily: FONTS.heading,
                         fontWeight: FONT_WEIGHTS.bold,
                         fontSize:   FONT_SIZES.xl,
@@ -99,7 +99,7 @@ export default function EditableList({ title, items, color, icon: Icon, onAdd, o
                                 transition: `all ${TRANSITIONS.base}`,
                             }}
                         >
-                            <Copy size={14} /> Copiar
+                            <Copy size={14} /> <span className="hidden sm:inline">Copiar</span>
                         </button>
                     )}
                     {onExpand && (

@@ -72,10 +72,11 @@ export default function Modal({
 
       {/* Container */}
       <div
+        className="w-[95%] md:w-[90%] p-4 md:p-6"
         style={{
           ...CARD_STYLE,
+          padding: undefined,
           position: "relative",
-          width: "90%",
           maxWidth,
           maxHeight: "85vh",
           overflowY: "auto",
