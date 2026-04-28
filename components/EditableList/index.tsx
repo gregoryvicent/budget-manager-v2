@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Copy } from "lucide-react";
+import { Copy, Maximize2 } from "lucide-react";
 import {
     COLORS, FONTS, FONT_SIZES, FONT_WEIGHTS, RADIUS, TRANSITIONS,
     formatCurrency,
@@ -19,7 +19,7 @@ import { EditableListProps } from "./types/EditableListProps";
  *
  * @param {EditableListProps} props - List configuration including title, items, color, icon, and CRUD callbacks
  */
-export default function EditableList({ title, items, color, icon: Icon, onAdd, onUpdate, onDelete, isCreating = false, isUpdating = false, isDeletingId = null, onCopyFromMonth }: EditableListProps) {
+export default function EditableList({ title, items, color, icon: Icon, onAdd, onUpdate, onDelete, isCreating = false, isUpdating = false, isDeletingId = null, onCopyFromMonth, onExpand, expandTriggerRef }: EditableListProps) {
     const [newName, setNewName]       = useState("");
     const [newAmount, setNewAmount]   = useState("");
     const [adding, setAdding]         = useState(false);
@@ -83,24 +83,43 @@ export default function EditableList({ title, items, color, icon: Icon, onAdd, o
                         {title}
                     </span>
                 </div>
-                {onCopyFromMonth && (
-                    <button
-                        onClick={onCopyFromMonth}
-                        aria-label={`Copiar ${title} de otro mes`}
-                        className="flex items-center gap-1.5 min-h-[44px] min-w-[44px] px-3 py-2 cursor-pointer"
-                        style={{
-                            borderRadius: RADIUS.lg,
-                            border: `1px dashed ${color}55`,
-                            background: "none",
-                            color,
-                            fontSize: FONT_SIZES.body,
-                            fontFamily: FONTS.body,
-                            transition: `all ${TRANSITIONS.base}`,
-                        }}
-                    >
-                        <Copy size={14} /> Copiar
-                    </button>
-                )}
+                <div className="flex items-center gap-2">
+                    {onCopyFromMonth && (
+                        <button
+                            onClick={onCopyFromMonth}
+                            aria-label={`Copiar ${title} de otro mes`}
+                            className="flex items-center gap-1.5 min-h-[44px] min-w-[44px] px-3 py-2 cursor-pointer"
+                            style={{
+                                borderRadius: RADIUS.lg,
+                                border: `1px dashed ${color}55`,
+                                background: "none",
+                                color,
+                                fontSize: FONT_SIZES.body,
+                                fontFamily: FONTS.body,
+                                transition: `all ${TRANSITIONS.base}`,
+                            }}
+                        >
+                            <Copy size={14} /> Copiar
+                        </button>
+                    )}
+                    {onExpand && (
+                        <button
+                            ref={expandTriggerRef}
+                            onClick={onExpand}
+                            aria-label={`Expandir ${title}`}
+                            className="flex items-center justify-center min-h-[44px] min-w-[44px] cursor-pointer"
+                            style={{
+                                borderRadius: RADIUS.lg,
+                                border: `1px solid ${color}33`,
+                                background: "none",
+                                color,
+                                transition: `all ${TRANSITIONS.base}`,
+                            }}
+                        >
+                            <Maximize2 size={16} />
+                        </button>
+                    )}
+                </div>
             </div>
 
             {/* Scrollable list */}

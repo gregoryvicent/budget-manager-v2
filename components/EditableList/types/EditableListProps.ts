@@ -16,4 +16,8 @@ export interface EditableListProps {
     isDeletingId?: string | null;
     /** Callback to open the "Copy from another month" modal. Button only shown when defined. */
     onCopyFromMonth?: () => void;
+    /** Callback to open the expanded view. Expand button only shown when defined. */
+    onExpand?: () => void;
+    /** Ref for the expand button, used to return focus when the modal closes. */
+    expandTriggerRef?: React.RefObject<HTMLButtonElement | null>;
 }

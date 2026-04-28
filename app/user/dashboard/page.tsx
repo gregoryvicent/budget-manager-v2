@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { useSession } from "next-auth/react";
 import { TrendingUp, TrendingDown, DollarSign, Shield } from "lucide-react";
 
@@ -23,6 +23,7 @@ import { useExpenseEntries } from "@/hooks/useExpenseEntries";
 import { useSavingsGoals } from "@/hooks/useSavingsGoals";
 import { useGoalMonthSettings } from "@/hooks/useGoalMonthSettings";
 import CopyItemsModal from "@/components/CopyItemsModal";
+import ExpandedListModal from "@/components/ExpandedListModal";
 import { COLORS, FONTS } from "@/lib/theme";
 import { getCategoryColor } from "@/lib/breakdownPalette";
 import type { CopyCategory } from "@/hooks/useCopyItems";
@@ -43,6 +44,14 @@ export default function BudgetDashboard() {
         categoryLabel: string;
         color: string;
     } | null>(null);
+
+    const [expandedList, setExpandedList] = useState<{
+        category: "income" | "fixed" | "variable";
+    } | null>(null);
+
+    const incomeExpandRef   = useRef<HTMLButtonElement>(null);
+    const fixedExpandRef    = useRef<HTMLButtonElement>(null);
+    const variableExpandRef = useRef<HTMLButtonElement>(null);
 
     const [selectedYear, setSelectedYear]   = useState(() => {
         if (typeof window !== "undefined") {
@@ -196,6 +205,60 @@ export default function BudgetDashboard() {
         }
     };
 
+    /** Maps the expanded category to the corresponding hook data and callbacks. */
+    const getExpandedProps = () => {
+        if (!expandedList) return null;
+        switch (expandedList.category) {
+            case "income":
+                return {
+                    title: "Fuentes de Ingresos",
+                    items: incomeHook.incomes,
+                    color: COLORS.income,
+                    icon: TrendingUp,
+                    onAdd: incomeHook.add,
+                    onUpdate: incomeHook.update,
+                    onDelete: incomeHook.remove,
+                    isCreating: incomeHook.isCreating,
+                    isUpdating: incomeHook.isUpdating,
+                    isDeletingId: incomeHook.isDeletingId,
+                    onCopyFromMonth: () => setCopyModal({ open: true, category: "INCOME", categoryLabel: "Fuentes de Ingresos", color: COLORS.income }),
+                    triggerRef: incomeExpandRef,
+                };
+            case "fixed":
+                return {
+                    title: "Gastos Fijos del Mes",
+                    items: fixedHook.expenses,
+                    color: COLORS.fixed,
+                    icon: TrendingDown,
+                    onAdd: fixedHook.add,
+                    onUpdate: fixedHook.update,
+                    onDelete: fixedHook.remove,
+                    isCreating: fixedHook.isCreating,
+                    isUpdating: fixedHook.isUpdating,
+                    isDeletingId: fixedHook.isDeletingId,
+                    onCopyFromMonth: () => setCopyModal({ open: true, category: "FIXED_EXPENSE", categoryLabel: "Gastos Fijos del Mes", color: COLORS.fixed }),
+                    triggerRef: fixedExpandRef,
+                };
+            case "variable":
+                return {
+                    title: "Gastos Variables del Mes",
+                    items: variableHook.expenses,
+                    color: COLORS.variable,
+                    icon: TrendingDown,
+                    onAdd: variableHook.add,
+                    onUpdate: variableHook.update,
+                    onDelete: variableHook.remove,
+                    isCreating: variableHook.isCreating,
+                    isUpdating: variableHook.isUpdating,
+                    isDeletingId: variableHook.isDeletingId,
+                    onCopyFromMonth: () => setCopyModal({ open: true, category: "VARIABLE_EXPENSE", categoryLabel: "Gastos Variables del Mes", color: COLORS.variable }),
+                    triggerRef: variableExpandRef,
+                };
+        }
+    };
+
+    const expandedProps = getExpandedProps();
+
     if (status === "loading") return null;
 
     return (
@@ -281,6 +344,8 @@ export default function BudgetDashboard() {
                         isUpdating={incomeHook.isUpdating}
                         isDeletingId={incomeHook.isDeletingId}
                         onCopyFromMonth={() => setCopyModal({ open: true, category: "INCOME", categoryLabel: "Fuentes de Ingresos", color: COLORS.income })}
+                        onExpand={() => setExpandedList({ category: "income" })}
+                        expandTriggerRef={incomeExpandRef}
                     />
                 )}
                 {(fixedHook.loading || !budgetMonthId) && fixedHook.expenses.length === 0 ? (
@@ -298,6 +363,8 @@ export default function BudgetDashboard() {
                         isUpdating={fixedHook.isUpdating}
                         isDeletingId={fixedHook.isDeletingId}
                         onCopyFromMonth={() => setCopyModal({ open: true, category: "FIXED_EXPENSE", categoryLabel: "Gastos Fijos del Mes", color: COLORS.fixed })}
+                        onExpand={() => setExpandedList({ category: "fixed" })}
+                        expandTriggerRef={fixedExpandRef}
                     />
                 )}
                 {(variableHook.loading || !budgetMonthId) && variableHook.expenses.length === 0 ? (
@@ -315,6 +382,8 @@ export default function BudgetDashboard() {
                         isUpdating={variableHook.isUpdating}
                         isDeletingId={variableHook.isDeletingId}
                         onCopyFromMonth={() => setCopyModal({ open: true, category: "VARIABLE_EXPENSE", categoryLabel: "Gastos Variables del Mes", color: COLORS.variable })}
+                        onExpand={() => setExpandedList({ category: "variable" })}
+                        expandTriggerRef={variableExpandRef}
                     />
                 )}
             </div>
@@ -412,6 +481,14 @@ export default function BudgetDashboard() {
                     selectedYear={selectedYear}
                     selectedMonth={selectedMonth}
                     onCopySuccess={handleCopySuccess}
+                />
+            )}
+
+            {expandedProps && (
+                <ExpandedListModal
+                    open={expandedList !== null}
+                    onClose={() => setExpandedList(null)}
+                    {...expandedProps}
                 />
             )}
         </div>
