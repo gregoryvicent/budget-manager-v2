@@ -391,7 +391,7 @@ export default function BudgetDashboard() {
             </div>
 
             {/* Goals + Charts */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6 items-start">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6 items-stretch">
                 {savingsHook.loading && savingsHook.goals.length === 0 ? (
                     <GoalsListSkeleton />
                 ) : (

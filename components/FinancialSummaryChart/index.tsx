@@ -18,7 +18,7 @@ export default function FinancialSummaryChart({ data, totalIncome }: FinancialSu
     const max = Math.max(...sorted.map((d) => Math.abs(d.value)));
 
     return (
-        <div style={{ ...CARD_STYLE, gap: 0 }}>
+        <div style={{ ...CARD_STYLE, gap: 0, height: "100%" }}>
             <div style={{
                 fontFamily:   FONTS.heading,
                 fontWeight:   FONT_WEIGHTS.bold,
@@ -29,7 +29,7 @@ export default function FinancialSummaryChart({ data, totalIncome }: FinancialSu
                 Resumen Financiero
             </div>
 
-            <div className="flex flex-col gap-3">
+            <div className="flex flex-col gap-3 flex-1 justify-center">
                 {sorted.map((item, i) => {
                     const isDeficit = item.value < 0;
                     const pct      = totalIncome > 0 ? (Math.abs(item.value) / totalIncome) * 100 : 0;

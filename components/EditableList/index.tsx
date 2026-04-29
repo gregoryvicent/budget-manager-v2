@@ -58,7 +58,7 @@ export default function EditableList({ title, items, color, icon: Icon, onAdd, o
 
     return (
         <div
-            className="flex flex-col gap-3 h-auto max-h-[400px] md:h-[380px] md:max-h-none p-6 rounded-[16px]"
+            className="flex flex-col gap-3 h-auto max-h-[500px] md:h-[520px] md:max-h-none p-6 rounded-[16px]"
             style={{
                 background: COLORS.card,
                 border: `1px solid ${COLORS.cardBorder}`,

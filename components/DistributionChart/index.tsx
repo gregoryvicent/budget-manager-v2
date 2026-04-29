@@ -43,7 +43,7 @@ export default function DistributionChart({ data, totalIncome, breakdownData }: 
     }, []);
 
     return (
-        <div style={{ ...CARD_STYLE }}>
+        <div style={{ ...CARD_STYLE, height: "100%", justifyContent: "space-between" }}>
             <div style={{
                 fontFamily: FONTS.heading,
                 fontWeight: FONT_WEIGHTS.bold,
