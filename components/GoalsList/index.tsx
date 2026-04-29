@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Plus, Trash2, Pencil, Check, Loader2, Unlink } from "lucide-react";
 import SavingsCard from "@/components/SavingsCard";
 import GoalAssignSelector from "@/components/GoalAssignSelector";
+import { useCurrency } from "@/hooks/useCurrency";
 import { COLORS, FONTS, FONT_SIZES, FONT_WEIGHTS, RADIUS, TRANSITIONS } from "@/lib/theme";
 import type { SavingsGoalData } from "@/hooks/useSavingsGoals";
 
@@ -57,9 +58,11 @@ export default function GoalsList({
     const [editAmount, setEditAmount]  = useState("");
     const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
+    const { toUsd, convert } = useCurrency();
+
     const handleAdd = async () => {
         if (!newTitle.trim() || !newAmount) return;
-        await onAdd(newTitle.trim(), Number(newAmount));
+        await onAdd(newTitle.trim(), toUsd(Number(newAmount)));
         setNewTitle("");
         setNewAmount("");
         setAdding(false);
@@ -68,12 +71,12 @@ export default function GoalsList({
     const startEdit = (g: SavingsGoalData) => {
         setEditingId(g.id);
         setEditTitle(g.title);
-        setEditAmount(String(g.goalAmount));
+        setEditAmount(String(convert(g.goalAmount)));
     };
 
     const handleEdit = async () => {
         if (!editingId || !editTitle.trim() || !editAmount) return;
-        await onUpdate(editingId, { title: editTitle.trim(), goalAmount: Number(editAmount) });
+        await onUpdate(editingId, { title: editTitle.trim(), goalAmount: toUsd(Number(editAmount)) });
         setEditingId(null);
     };
 

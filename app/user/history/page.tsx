@@ -7,6 +7,7 @@ import HistoryPageSkeleton from "@/components/HistoryPageSkeleton";
 import { useBudgetHistory } from "@/hooks/useBudgetHistory";
 import HistoryBarChart from "@/components/HistoryBarChart";
 import YearFilter from "@/components/YearFilter";
+import CurrencyProvider from "@/components/CurrencyProvider";
 import {
   COLORS, FONTS, FONT_SIZES, FONT_WEIGHTS,
   RADIUS, SPACING, TRANSITIONS,
@@ -24,6 +25,7 @@ export default function BudgetHistoryPage() {
   const hasData = chartData.some((d) => d.income > 0 || d.expenses > 0);
 
   return (
+    <CurrencyProvider>
     <div
       className="min-h-screen p-4 lg:p-6 overflow-x-hidden box-border"
       style={{ background: COLORS.bg, fontFamily: FONTS.body }}
@@ -172,5 +174,6 @@ export default function BudgetHistoryPage() {
         </>
       )}
     </div>
+    </CurrencyProvider>
   );
 }

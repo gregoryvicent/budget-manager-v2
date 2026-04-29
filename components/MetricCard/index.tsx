@@ -47,7 +47,7 @@ export default function MetricCard({ label, value, color, icon: Icon, subtitle, 
                     {label}
                 </div>
                 <div
-                    className="text-2xl lg:text-[28px] truncate mb-1.5"
+                    className="text-lg sm:text-2xl lg:text-[28px] truncate mb-1.5"
                     style={{
                         color: COLORS.text,
                         fontWeight: FONT_WEIGHTS.extrabold,

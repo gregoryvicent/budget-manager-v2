@@ -1,8 +1,9 @@
 "use client";
 
 import {
-    COLORS, FONTS, FONT_SIZES, FONT_WEIGHTS, RADIUS, SPACING, TRANSITIONS, CARD_STYLE, formatCurrency,
+    COLORS, FONTS, FONT_SIZES, FONT_WEIGHTS, RADIUS, SPACING, TRANSITIONS, CARD_STYLE,
 } from "@/lib/theme";
+import { useCurrency } from "@/hooks/useCurrency";
 import { FinancialSummaryChartProps } from "./types/FinancialSummaryChartProps";
 
 /**
@@ -12,6 +13,7 @@ import { FinancialSummaryChartProps } from "./types/FinancialSummaryChartProps";
  * @param {FinancialSummaryChartProps} props - Chart data and total income reference
  */
 export default function FinancialSummaryChart({ data, totalIncome }: FinancialSummaryChartProps) {
+    const { formatAmount } = useCurrency();
     const sorted = [...data].sort((a, b) => Math.abs(b.value) - Math.abs(a.value));
     const max = Math.max(...sorted.map((d) => Math.abs(d.value)));
 
@@ -76,7 +78,7 @@ export default function FinancialSummaryChart({ data, totalIncome }: FinancialSu
                                             textAlign:  "right",
                                         }}
                                     >
-                                        {isDeficit ? "-" : ""}{formatCurrency(Math.abs(item.value))}
+                                        {isDeficit ? "-" : ""}{formatAmount(Math.abs(item.value))}
                                     </span>
                                 </div>
                             </div>

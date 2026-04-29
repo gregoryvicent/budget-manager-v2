@@ -19,8 +19,8 @@ import {
   RADIUS,
   SPACING,
   TRANSITIONS,
-  formatCurrency,
 } from "@/lib/theme";
+import { useCurrency } from "@/hooks/useCurrency";
 
 /**
  * Props for the CopyItemsModal component.
@@ -77,6 +77,8 @@ export default function CopyItemsModal({
     executeCopy,
     reset,
   } = useCopyItems(open ? budgetMonthId : null, selectedYear, selectedMonth, category);
+
+  const { formatAmount } = useCurrency();
 
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [selectedSourceId, setSelectedSourceId] = useState<string | null>(null);
@@ -175,6 +177,7 @@ export default function CopyItemsModal({
           allSelected={allSelected}
           count={count}
           totalAmount={totalAmount}
+          formatAmount={formatAmount}
           onToggleItem={toggleItem}
           onToggleAll={handleToggleAll}
           onBack={handleBack}
@@ -309,6 +312,7 @@ interface ItemSelectionPhaseProps {
   allSelected: boolean;
   count: number;
   totalAmount: number;
+  formatAmount: (amountUsd: number) => string;
   onToggleItem: (id: string) => void;
   onToggleAll: () => void;
   onBack: () => void;
@@ -325,6 +329,7 @@ function ItemSelectionPhase({
   allSelected,
   count,
   totalAmount,
+  formatAmount,
   onToggleItem,
   onToggleAll,
   onBack,
@@ -420,6 +425,7 @@ function ItemSelectionPhase({
             checked={selectedIds.has(item.id)}
             color={color}
             disabled={isCopying}
+            formatAmount={formatAmount}
             onToggle={() => onToggleItem(item.id)}
           />
         ))}
@@ -439,7 +445,7 @@ function ItemSelectionPhase({
           {count} ítem{count !== 1 ? "s" : ""} seleccionado{count !== 1 ? "s" : ""}
         </span>
         <span style={{ color, fontWeight: FONT_WEIGHTS.semibold, fontSize: FONT_SIZES.base, fontFamily: FONTS.heading }}>
-          {formatCurrency(totalAmount)}
+          {formatAmount(totalAmount)}
         </span>
       </div>
 
@@ -490,10 +496,11 @@ interface ItemCheckboxProps {
   checked: boolean;
   color: string;
   disabled: boolean;
+  formatAmount: (amountUsd: number) => string;
   onToggle: () => void;
 }
 
-function ItemCheckbox({ item, checked, color, disabled, onToggle }: ItemCheckboxProps) {
+function ItemCheckbox({ item, checked, color, disabled, formatAmount, onToggle }: ItemCheckboxProps) {
   const [hovered, setHovered] = useState(false);
   const CheckIcon = checked ? CheckSquare : Square;
 
@@ -550,7 +557,7 @@ function ItemCheckbox({ item, checked, color, disabled, onToggle }: ItemCheckbox
           flexShrink: 0,
         }}
       >
-        {formatCurrency(item.amount)}
+        {formatAmount(item.amount)}
       </span>
     </label>
   );

@@ -2,7 +2,8 @@
 
 import { useState, useRef, useCallback } from "react";
 import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
-import { COLORS, FONTS, FONT_SIZES, FONT_WEIGHTS, SPACING, CARD_STYLE, RADIUS, formatCurrency } from "@/lib/theme";
+import { COLORS, FONTS, FONT_SIZES, FONT_WEIGHTS, SPACING, CARD_STYLE, RADIUS } from "@/lib/theme";
+import { useCurrency } from "@/hooks/useCurrency";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
 import DetailModal from "@/components/DetailModal";
 import type { DistributionChartProps } from "./types/DistributionChartProps";
@@ -18,6 +19,7 @@ const EMPTY_SLICE = [{ name: "", value: 1, color: COLORS.cardBorder }];
  * @param {DistributionChartProps} props - Chart data, totalIncome, and optional breakdownData
  */
 export default function DistributionChart({ data, totalIncome, breakdownData }: DistributionChartProps) {
+    const { formatAmount } = useCurrency();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [hoveredName, setHoveredName] = useState<string | null>(null);
     const buttonRef = useRef<HTMLButtonElement>(null);
@@ -80,7 +82,7 @@ export default function DistributionChart({ data, totalIncome, breakdownData }: 
                                 color: COLORS.text,
                                 marginBottom: SPACING["1"],
                             }}>
-                                {formatCurrency(totalIncome)}
+                                {formatAmount(totalIncome)}
                             </div>
                         )}
                         <div className="relative" style={{ width: chartSize, height: chartSize }}>
@@ -129,7 +131,7 @@ export default function DistributionChart({ data, totalIncome, breakdownData }: 
                                         color: COLORS.text,
                                         lineHeight: 1.1,
                                     }}>
-                                        {formatCurrency(totalIncome)}
+                                        {formatAmount(totalIncome)}
                                     </div>
                                 </div>
                             )}
@@ -192,7 +194,7 @@ export default function DistributionChart({ data, totalIncome, breakdownData }: 
                                             color: COLORS.text,
                                             whiteSpace: "nowrap",
                                         }}>
-                                            {formatCurrency(item.value)}
+                                            {formatAmount(item.value)}
                                         </span>
                                         <span style={{
                                             fontSize: FONT_SIZES.xs,

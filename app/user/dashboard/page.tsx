@@ -24,6 +24,7 @@ import { useSavingsGoals } from "@/hooks/useSavingsGoals";
 import { useGoalMonthSettings } from "@/hooks/useGoalMonthSettings";
 import CopyItemsModal from "@/components/CopyItemsModal";
 import ExpandedListModal from "@/components/ExpandedListModal";
+import CurrencyProvider from "@/components/CurrencyProvider";
 import { COLORS, FONTS } from "@/lib/theme";
 import { getCategoryColor } from "@/lib/breakdownPalette";
 import type { CopyCategory } from "@/hooks/useCopyItems";
@@ -262,6 +263,7 @@ export default function BudgetDashboard() {
     if (status === "loading") return null;
 
     return (
+        <CurrencyProvider>
         <div
             className="min-h-screen p-4 lg:p-6 overflow-x-hidden box-border"
             style={{
@@ -492,5 +494,6 @@ export default function BudgetDashboard() {
                 />
             )}
         </div>
+        </CurrencyProvider>
     );
 }

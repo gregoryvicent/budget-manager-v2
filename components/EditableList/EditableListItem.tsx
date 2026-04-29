@@ -1,8 +1,10 @@
+"use client";
+
 import { Check, X, Trash2, Loader2 } from "lucide-react";
 import {
     COLORS, FONTS, FONT_SIZES, FONT_WEIGHTS, RADIUS, TRANSITIONS,
-    formatCurrency,
 } from "@/lib/theme";
+import { useCurrency } from "@/hooks/useCurrency";
 import { EditableListItemProps } from "./types/EditableListItemProps";
 
 /**
@@ -19,6 +21,8 @@ export default function EditableListItem({
     onStartEdit, onConfirmEdit, onCancelEdit, onRemove,
     isUpdating = false, isDeleting = false,
 }: EditableListItemProps) {
+    const { formatAmount } = useCurrency();
+
     const handleKeyDown = (e: React.KeyboardEvent) => {
         if (e.key === "Enter")  onConfirmEdit();
         if (e.key === "Escape") onCancelEdit();
@@ -95,10 +99,10 @@ export default function EditableListItem({
                     </span>
                     <span
                         onClick={onStartEdit}
-                        className="shrink-0 cursor-pointer"
+                        className="shrink-0 cursor-pointer truncate max-w-[45%]"
                         style={{ color, fontWeight: FONT_WEIGHTS.bold, fontSize: FONT_SIZES.base, fontFamily: FONTS.heading }}
                     >
-                        {formatCurrency(item.amount)}
+                        {formatAmount(item.amount)}
                     </span>
                     <button
                         onClick={onRemove}

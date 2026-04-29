@@ -4,9 +4,9 @@ import { useState } from "react";
 import { Copy, Maximize2 } from "lucide-react";
 import {
     COLORS, FONTS, FONT_SIZES, FONT_WEIGHTS, RADIUS, TRANSITIONS,
-    formatCurrency,
 } from "@/lib/theme";
 import { type ListItem } from "@/lib/types";
+import { useCurrency } from "@/hooks/useCurrency";
 import EditableListItem from "./EditableListItem";
 import AddItemForm from "./AddItemForm";
 import { EditableListProps } from "./types/EditableListProps";
@@ -20,6 +20,8 @@ import { EditableListProps } from "./types/EditableListProps";
  * @param {EditableListProps} props - List configuration including title, items, color, icon, and CRUD callbacks
  */
 export default function EditableList({ title, items, color, icon: Icon, onAdd, onUpdate, onDelete, isCreating = false, isUpdating = false, isDeletingId = null, onCopyFromMonth, onExpand, expandTriggerRef }: EditableListProps) {
+    const { formatAmount, toUsd, convert } = useCurrency();
+
     const [newName, setNewName]       = useState("");
     const [newAmount, setNewAmount]   = useState("");
     const [adding, setAdding]         = useState(false);
@@ -31,7 +33,7 @@ export default function EditableList({ title, items, color, icon: Icon, onAdd, o
 
     const addItem = async () => {
         if (!newName || !newAmount) return;
-        await onAdd(newName, parseFloat(newAmount));
+        await onAdd(newName, toUsd(parseFloat(newAmount)));
         setNewName("");
         setNewAmount("");
         setAdding(false);
@@ -42,13 +44,13 @@ export default function EditableList({ title, items, color, icon: Icon, onAdd, o
     const startEdit = (item: ListItem) => {
         setEditingId(item.id);
         setEditName(item.name);
-        setEditAmount(String(item.amount));
+        setEditAmount(String(convert(item.amount)));
     };
 
     const confirmEdit = async () => {
         const parsed = parseFloat(editAmount);
         if (!editName.trim() || isNaN(parsed) || parsed < 0) { cancelEdit(); return; }
-        await onUpdate(editingId!, editName.trim(), parsed);
+        await onUpdate(editingId!, editName.trim(), toUsd(parsed));
         setEditingId(null);
     };
 
@@ -164,7 +166,7 @@ export default function EditableList({ title, items, color, icon: Icon, onAdd, o
             >
                 <span style={{ color: COLORS.muted, fontSize: FONT_SIZES.body, fontFamily: FONTS.body }}>Total</span>
                 <span style={{ color, fontWeight: FONT_WEIGHTS.extrabold, fontSize: FONT_SIZES["2xl"], fontFamily: FONTS.heading }}>
-                    {formatCurrency(total)}
+                    {formatAmount(total)}
                 </span>
             </div>
         </div>

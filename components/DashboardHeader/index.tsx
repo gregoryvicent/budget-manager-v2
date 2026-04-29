@@ -9,6 +9,8 @@ import {
 } from "@/lib/theme";
 import { DashboardHeaderProps } from "./types/DashboardHeaderProps";
 import Tooltip from "@/components/Tooltip";
+import CurrencySelector from "@/components/CurrencySelector";
+import { useCurrency } from "@/hooks/useCurrency";
 
 /**
  * Dashboard header with greeting, month label, balance badge, and action buttons.
@@ -18,6 +20,7 @@ import Tooltip from "@/components/Tooltip";
  * @param {DashboardHeaderProps} props - Header configuration
  */
 export default function DashboardHeader({ afterExpenses, onToggleSidebar, selectedYear, selectedMonth, userName }: DashboardHeaderProps) {
+    const { rateInfo } = useCurrency();
     const monthLabel = new Date(selectedYear, selectedMonth - 1)
         .toLocaleDateString("es-CO", { month: "long", year: "numeric" });
 
@@ -58,9 +61,31 @@ export default function DashboardHeader({ afterExpenses, onToggleSidebar, select
                 }}>
                     Presupuesto de {monthLabel}
                 </p>
+                {rateInfo && (
+                    <div
+                        className="inline-flex items-center gap-1.5 mt-1.5 ml-0 sm:ml-[50px]"
+                        style={{
+                            padding: `${SPACING["1"]}px ${SPACING["3"]}px`,
+                            borderRadius: RADIUS.lg,
+                            background: COLORS.accent + "15",
+                            border: `1px solid ${COLORS.accent}30`,
+                        }}
+                    >
+                        <span style={{
+                            fontSize: FONT_SIZES.body,
+                            fontFamily: FONTS.heading,
+                            fontWeight: FONT_WEIGHTS.semibold,
+                            color: COLORS.accent,
+                        }}>
+                            {rateInfo}
+                        </span>
+                    </div>
+                )}
             </div>
 
-            <div className="flex items-center gap-2.5">
+            <div className="flex items-center gap-2.5 flex-wrap">
+                {/* Currency selector */}
+                <CurrencySelector />
                 {/* Balance badge — icon-only on mobile, full text on md+ */}
                 <div
                     className="flex items-center gap-2"

@@ -2,8 +2,9 @@
 
 import { useState } from "react";
 import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
-import { COLORS, FONTS, FONT_SIZES, FONT_WEIGHTS, SPACING, RADIUS, formatCurrency } from "@/lib/theme";
+import { COLORS, FONTS, FONT_SIZES, FONT_WEIGHTS, SPACING, RADIUS } from "@/lib/theme";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
+import { useCurrency } from "@/hooks/useCurrency";
 import type { BreakdownDonutProps } from "./types/BreakdownDonutProps";
 
 const EMPTY_SLICE = [{ name: "", value: 1, color: COLORS.cardBorder }];
@@ -17,6 +18,7 @@ const EMPTY_SLICE = [{ name: "", value: 1, color: COLORS.cardBorder }];
  */
 export default function BreakdownDonut({ title, items, referenceTotal, emptyMessage }: BreakdownDonutProps) {
   const isMobile = useMediaQuery("(max-width: 767px)");
+  const { formatAmount } = useCurrency();
   const [hoveredName, setHoveredName] = useState<string | null>(null);
 
   const filtered = items.filter((item) => item.value !== 0);
@@ -88,7 +90,7 @@ export default function BreakdownDonut({ title, items, referenceTotal, emptyMess
                 color: COLORS.text,
                 marginBottom: SPACING["1"],
               }}>
-                {formatCurrency(categoryTotal)}
+                {formatAmount(categoryTotal)}
               </div>
             )}
             <div className="relative" style={{ width: chartSize, height: chartSize }}>
@@ -137,7 +139,7 @@ export default function BreakdownDonut({ title, items, referenceTotal, emptyMess
                     color: COLORS.text,
                     lineHeight: 1.1,
                   }}>
-                    {formatCurrency(categoryTotal)}
+                    {formatAmount(categoryTotal)}
                   </div>
                 </div>
               )}
@@ -200,7 +202,7 @@ export default function BreakdownDonut({ title, items, referenceTotal, emptyMess
                       color: COLORS.text,
                       whiteSpace: "nowrap",
                     }}>
-                      {formatCurrency(item.value)}
+                      {formatAmount(item.value)}
                     </span>
                     <span style={{
                       fontSize: FONT_SIZES.xs,
