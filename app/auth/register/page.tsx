@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { signIn, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -122,6 +123,9 @@ export default function RegisterPage() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-[#0a0f1e] px-4">
       <div className="w-full mx-4 md:max-w-md rounded-2xl border border-[#1f2937] bg-[#111827] p-5 md:p-8">
+        <div className="flex justify-center mb-4">
+          <Image src="/mubu_icon_03.png" alt="Mubu" width={80} height={80} />
+        </div>
         <h1 className="mb-6 text-center text-2xl font-bold text-[#f9fafb]">
           Crear Cuenta
         </h1>

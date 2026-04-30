@@ -2,7 +2,8 @@
 
 import { signOut } from "next-auth/react";
 import Link from "next/link";
-import { TrendingUp, TrendingDown, Wallet, CalendarDays, LogOut, BarChart3 } from "lucide-react";
+import { TrendingUp, TrendingDown, CalendarDays, LogOut, BarChart3 } from "lucide-react";
+import Image from "next/image";
 import {
     COLORS, FONTS, FONT_SIZES, FONT_WEIGHTS,
     RADIUS, SPACING, TRANSITIONS,
@@ -29,13 +30,12 @@ export default function DashboardHeader({ afterExpenses, onToggleSidebar, select
             <div>
                 <div className="flex items-center gap-2.5">
                     <div
-                        className="flex items-center justify-center"
+                        className="flex items-center justify-center overflow-hidden"
                         style={{
                             width: 40, height: 40, borderRadius: RADIUS.xl,
-                            background: `linear-gradient(135deg, ${COLORS.accent}, ${COLORS.investment})`,
                         }}
                     >
-                        <Wallet size={20} color={COLORS.text} />
+                        <Image src="/mubu_icon_03.png" alt="Mubu" width={40} height={40} />
                     </div>
                     <h1
                         className="m-0 text-xl lg:text-[22px] truncate max-w-[60vw] md:max-w-none"

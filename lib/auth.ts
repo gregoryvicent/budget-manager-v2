@@ -6,7 +6,7 @@ import { PrismaUserRepository } from "@/backend/adapters/db/prisma/budgetManager
 const userRepo = new PrismaUserRepository();
 
 /**
- * NextAuth configuration options for Budget Manager.
+ * NextAuth configuration options for Mubu.
  * Uses CredentialsProvider with email/password authentication
  * and JWT session strategy.
  */

@@ -129,7 +129,7 @@ const FEATURES: FeatureCard[] = [
 ];
 
 /**
- * Public landing page for Budget Manager.
+ * Public landing page for Mubu.
  * Shows a full landing page with sticky header, hero section,
  * features section, and footer.
  * Redirects authenticated users to the dashboard.
@@ -151,8 +151,9 @@ export default function LandingPage() {
       {/* Sticky header with navigation */}
       <header className="sticky top-0 z-50 bg-bg/95 backdrop-blur border-b border-card-border">
         <div className="max-w-7xl mx-auto px-4 md:px-6 h-16 flex items-center justify-between">
-          <span className="font-bold text-text text-lg">
-            Gestor de Presupuestos
+          <span className="flex items-center gap-2.5 font-extrabold text-text text-xl tracking-tight">
+            <Image src="/mubu_icon_03.png" alt="Mubu" width={40} height={40} />
+            <span className="bg-gradient-to-r from-white to-blue-400 bg-clip-text text-transparent">Mubu</span>
           </span>
           <nav className="flex items-center gap-2 md:gap-4">
             <Link
@@ -202,7 +203,7 @@ export default function LandingPage() {
             <div className="relative rounded-xl md:rounded-2xl border border-card-border overflow-hidden shadow-[0_0_60px_-15px_rgba(37,99,235,0.3)]">
               <Image
                 src="/media/photos/2026-04-29_18-34.png"
-                alt="Vista del dashboard de Gestor de Presupuestos mostrando ingresos, gastos y metas de ahorro"
+                alt="Vista del dashboard de Mubu mostrando ingresos, gastos y metas de ahorro"
                 width={1920}
                 height={960}
                 className="w-full h-auto"
@@ -244,8 +245,9 @@ export default function LandingPage() {
       <footer className="border-t border-card-border py-8 px-4">
         <div className="max-w-7xl mx-auto text-center">
           <p className="text-muted text-sm">
-            Gestor de Presupuestos © {new Date().getFullYear()}
+            Mubu © {new Date().getFullYear()}
           </p>
+          <Image src="/mubu_icon_03.png" alt="" width={24} height={24} className="mt-2 mx-auto opacity-50" />
         </div>
       </footer>
     </div>
