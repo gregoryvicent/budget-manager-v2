@@ -21,7 +21,7 @@ export const metadata: Metadata = {
   description:
     "Aplicación web para gestionar presupuestos personales u organizacionales con una interfaz visual clara y minimalista.",
   manifest: "/manifest.json",
-  themeColor: "#0a0a0a",
+  themeColor: "#0a0f1e",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",

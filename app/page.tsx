@@ -151,20 +151,20 @@ export default function LandingPage() {
       {/* Sticky header with navigation */}
       <header className="sticky top-0 z-50 bg-bg/95 backdrop-blur border-b border-card-border">
         <div className="max-w-7xl mx-auto px-4 md:px-6 h-16 flex items-center justify-between">
-          <span className="flex items-center gap-2.5 font-extrabold text-text text-xl tracking-tight">
-            <Image src="/mubu_icon_03.png" alt="Mubu" width={40} height={40} />
+          <span className="flex items-center gap-2 font-extrabold text-text text-lg sm:text-xl tracking-tight">
+            <Image src="/mubu_icon_03.png" alt="Mubu" width={36} height={36} className="sm:w-10 sm:h-10" />
             <span className="bg-gradient-to-r from-white to-blue-400 bg-clip-text text-transparent">Mubu</span>
           </span>
-          <nav className="flex items-center gap-2 md:gap-4">
+          <nav className="flex items-center gap-1 sm:gap-2 md:gap-4">
             <Link
               href="/auth/login"
-              className="text-text-dim hover:text-text transition-colors min-h-[44px] flex items-center px-3"
+              className="text-text-dim hover:text-text transition-colors min-h-[44px] flex items-center px-2 sm:px-3 text-sm sm:text-base whitespace-nowrap"
             >
               Iniciar Sesión
             </Link>
             <Link
               href="/auth/register"
-              className="bg-[#2563eb] text-white rounded-lg px-4 min-h-[44px] flex items-center font-semibold hover:bg-[#1d4ed8] transition-colors"
+              className="bg-[#2563eb] text-white rounded-lg px-3 sm:px-4 min-h-[44px] flex items-center font-semibold hover:bg-[#1d4ed8] transition-colors text-sm sm:text-base whitespace-nowrap"
             >
               Registrarse
             </Link>
