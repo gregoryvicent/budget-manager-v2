@@ -45,8 +45,8 @@
       "purpose": "maskable"
     },
     {
-      "src": "/mubu_icon_03.png",
-      "sizes": "631x634",
+      "src": "/icons/icon-any-512x512.png",
+      "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
     }
